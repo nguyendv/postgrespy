@@ -1,33 +1,25 @@
+"""
+Version: 0.1
+"""
+
 import os
 import psycopg2
+from psycopg2.pool import ThreadedConnectionPool
 from urllib import parse
 from jinja2 import Template
-from flask import g
+
 
 parse.uses_netloc.append('postgres')
 url = parse.urlparse(os.environ['DATABASE_URL'])
 
-
-def get_db_connect():
-    """Open a new database connection if there is none yet
-    for the application app context.
-    """
-    # if not hasattr(g, 'db_conn'):
-    #     g.db_conn = psycopg2.connect(
-    #         database=url.path[1:],
-    #         user=url.username,
-    #         password=url.password,
-    #         host=url.hostname,
-    #         port=url.port
-    #     )
-    # return g.db_conn
-
-    return psycopg2.connect(
-        database=url.path[1:],
-        user=url.username,
-        password=url.password,
-        host=url.hostname,
-        port=url.port)
+pool = ThreadedConnectionPool(minconn=os.environ['PG_POOL_MIN_CONN'],
+                              maxconn=os.environ['PG_POOL_MAX_CONN'],
+                              database=url.path[1:],
+                              user=url.username,
+                              password=url.password,
+                              host=url.hostname,
+                              port=url.port
+                              )
 
 
 class SqlModel:
@@ -59,7 +51,8 @@ class SqlModel:
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
-        cur = g.db.cursor()
+        conn = pool.getconn()
+        cur = conn.cursor()
 
         non_id_vals = tuple(self.__dict__[col] for col in self._cols_)
 
@@ -78,9 +71,9 @@ class SqlModel:
             try:
                 cur.execute(stmt, non_id_vals)
                 self.id = cur.fetchone()[0]
-                g.db.commit()
+                conn.commit()
             except psycopg2.DatabaseError as e:
-                g.db.rollback()
+                conn.rollback()
                 if e.pgcode == '23505':
                     """
                     23505: PostgreSQL error code: unique violation
@@ -99,14 +92,16 @@ class SqlModel:
                                    cols=','.join(
                                        c + '=%s' for c in self._cols_))
             cur.execute(stmt, non_id_vals + (self.id,))
-            g.db.commit()
+            conn.commit()
         cur.close()
+        pool.putconn(conn)
 
     def delete(self):
         """
         Delete the row from database.
         """
-        cur = g.db.cursor()
+        conn = pool.getconn()
+        cur = conn.cursor()
         template = Template('DELETE FROM {{table}}\n'
                             'WHERE id = %s')
         stmt = template.render(table=self._table_)
@@ -114,8 +109,9 @@ class SqlModel:
         self.id = None
         for col in self._cols_:
             setattr(self, col, None)
-        g.db.commit()
+        conn.commit()
         cur.close()
+        pool.putconn(conn)
 
     def _load(self):
         """
@@ -123,7 +119,8 @@ class SqlModel:
         Required id is not None
         """
         assert self.id is not None
-        cur = g.db.cursor()
+        conn = pool.getconn()
+        cur = conn.cursor()
         template = Template('SELECT {{cols}}\n'
                             'FROM {{table}}\n'
                             'WHERE id=%s\n'
@@ -146,6 +143,7 @@ class SqlModel:
                 raise NotImplementedError('New error. Need to check')
 
         cur.close()
+        pool.putconn(conn)
 
 
 class UniqueViolatedError(Exception):
