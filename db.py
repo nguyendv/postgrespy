@@ -1,24 +1,21 @@
 """
-Version: 0.1
+Version: 0.2
 """
 
 import os
 import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
-from urllib import parse
 from jinja2 import Template
 
 
-parse.uses_netloc.append('postgres')
-url = parse.urlparse(os.environ['DATABASE_URL'])
 
 pool = ThreadedConnectionPool(minconn=os.environ['PG_POOL_MIN_CONN'],
                               maxconn=os.environ['PG_POOL_MAX_CONN'],
-                              database=url.path[1:],
-                              user=url.username,
-                              password=url.password,
-                              host=url.hostname,
-                              port=url.port
+                              database=os.environ['POSTGRES_USER'],
+                              user=os.environ['POSTGRES_USER'],
+                              password=os.environ['POSTGRES_PASSWORD'],
+                              host=os.environ['POSTGRES_HOST'],
+                              port=os.environ['POSTGRES_PORT']
                               )
 
 
