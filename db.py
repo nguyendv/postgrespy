@@ -1,5 +1,5 @@
 """
-Version: 0.2
+Version: 0.3
 """
 
 import os
@@ -8,15 +8,35 @@ from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Template
 
 
+_pool = None
 
-pool = ThreadedConnectionPool(minconn=os.environ['PG_POOL_MIN_CONN'],
-                              maxconn=os.environ['PG_POOL_MAX_CONN'],
-                              database=os.environ['POSTGRES_USER'],
-                              user=os.environ['POSTGRES_USER'],
-                              password=os.environ['POSTGRES_PASSWORD'],
-                              host=os.environ['POSTGRES_HOST'],
-                              port=os.environ['POSTGRES_PORT']
-                              )
+""" `db.py` assumes that you use only one Postgresql database server for your application.abs
+If you need more than one, modifying this function is necessary
+"""
+
+
+def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None, host=None, port=None):
+    global _pool
+    if _pool is None:
+        if minconn is None:
+            minconn = os.environ['PG_POOL_MIN_CONN']
+        if maxconn is None:
+            maxconn = os.environ['PG_POOL_MAX_CONN']
+        if database is None:
+            database = os.environ['POSTGRES_USER']
+        if user is None:
+            user = os.environ['POSTGRES_USER']
+        if password is None:
+            password = os.environ['POSTGRES_PASSWORD']
+        if host is None:
+            host = os.environ['POSTGRES_HOST']
+        if port is None:
+            port = os.environ['POSTGRES_PORT']
+        pool = ThreadedConnectionPool(minconn=minconn, maxconn=maxconn, database=database,
+                                      user=user, password=password,
+                                      host=host, port=port
+                                      )
+    return pool
 
 
 class SqlModel:
@@ -30,6 +50,8 @@ class SqlModel:
         - define a tupe `_cols_` class attribute.
         Do not include `id` in `_cols_`.
         Remember every child has a implicit `id` row.
+
+        See test.py for example.
     """
 
     def __init__(self, id=None, **kwargs):
@@ -48,6 +70,7 @@ class SqlModel:
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
+        pool = get_pool()
         conn = pool.getconn()
         cur = conn.cursor()
 
@@ -97,6 +120,7 @@ class SqlModel:
         """
         Delete the row from database.
         """
+        pool = get_pool()
         conn = pool.getconn()
         cur = conn.cursor()
         template = Template('DELETE FROM {{table}}\n'
@@ -116,6 +140,7 @@ class SqlModel:
         Required id is not None
         """
         assert self.id is not None
+        pool = get_pool()
         conn = pool.getconn()
         cur = conn.cursor()
         template = Template('SELECT {{cols}}\n'
