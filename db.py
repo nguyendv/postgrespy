@@ -10,12 +10,14 @@ from jinja2 import Template
 
 _pool = None
 
-""" `db.py` assumes that you use only one Postgresql database server for your application.abs
-If you need more than one, modifying this function is necessary
-"""
-
 
 def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None, host=None, port=None):
+    """ `db.py` assumes that you use only one Postgresql database server for your application.
+    If you need more than one, modifying this function is necessary.
+
+    !IMPORTANT: if this function is never called, _pool is None, so others may not work.
+    My intent is to force users call this function explicitly.
+    """
     global _pool
     if _pool is None:
         if minconn is None:
@@ -32,11 +34,11 @@ def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None
             host = os.environ['POSTGRES_HOST']
         if port is None:
             port = os.environ['POSTGRES_PORT']
-        pool = ThreadedConnectionPool(minconn=minconn, maxconn=maxconn, database=database,
-                                      user=user, password=password,
-                                      host=host, port=port
-                                      )
-    return pool
+        _pool = ThreadedConnectionPool(minconn=minconn, maxconn=maxconn, database=database,
+                                       user=user, password=password,
+                                       host=host, port=port
+                                       )
+    return _pool
 
 
 class SqlModel:
@@ -70,8 +72,7 @@ class SqlModel:
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
-        pool = get_pool()
-        conn = pool.getconn()
+        conn = _pool.getconn()
         cur = conn.cursor()
 
         non_id_vals = tuple(self.__dict__[col] for col in self._cols_)
@@ -114,14 +115,13 @@ class SqlModel:
             cur.execute(stmt, non_id_vals + (self.id,))
             conn.commit()
         cur.close()
-        pool.putconn(conn)
+        _pool.putconn(conn)
 
     def delete(self):
         """
         Delete the row from database.
         """
-        pool = get_pool()
-        conn = pool.getconn()
+        conn = _pool.getconn()
         cur = conn.cursor()
         template = Template('DELETE FROM {{table}}\n'
                             'WHERE id = %s')
@@ -132,7 +132,7 @@ class SqlModel:
             setattr(self, col, None)
         conn.commit()
         cur.close()
-        pool.putconn(conn)
+        _pool.putconn(conn)
 
     def _load(self):
         """
@@ -140,8 +140,7 @@ class SqlModel:
         Required id is not None
         """
         assert self.id is not None
-        pool = get_pool()
-        conn = pool.getconn()
+        conn = _pool.getconn()
         cur = conn.cursor()
         template = Template('SELECT {{cols}}\n'
                             'FROM {{table}}\n'
@@ -165,7 +164,7 @@ class SqlModel:
                 raise NotImplementedError('New error. Need to check')
 
         cur.close()
-        pool.putconn(conn)
+        _pool.putconn(conn)
 
 
 class UniqueViolatedError(Exception):
