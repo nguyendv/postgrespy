@@ -1,6 +1,4 @@
-from db import SqlModel, get_pool
-
-pool = get_pool()
+from db import SqlModel
 
 
 class Student(SqlModel):

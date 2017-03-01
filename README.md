@@ -3,7 +3,7 @@ db.py: a dead simple python ORM
 ## CHANGE LOGS
 #### Version v0.4
 BREAKING CHANGES:
-- If you don't explicitly call `get_pool()`, some functions may not work.
+- You need to call `get_pool()` whenever you want to access the pool, internally or externally.
 
 #### Version v0.3
 - Implement `get_pool()` function. Now you'll need to `get_pool()` to access a pool.

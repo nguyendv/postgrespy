@@ -13,7 +13,7 @@ _pool = None
 
 def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None, host=None, port=None):
     """ `db.py` assumes that you use only one Postgresql database server for your application.
-    If you need more than one, modifying this function is necessary.
+    If you need more than one, modifying this module is necessary.
 
     !IMPORTANT: if this function is never called, _pool is None, so others may not work.
     My intent is to force users call this function explicitly.
@@ -72,7 +72,8 @@ class SqlModel:
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
-        conn = _pool.getconn()
+        pool = get_pool()
+        conn = pool.getconn()
         cur = conn.cursor()
 
         non_id_vals = tuple(self.__dict__[col] for col in self._cols_)
@@ -115,13 +116,14 @@ class SqlModel:
             cur.execute(stmt, non_id_vals + (self.id,))
             conn.commit()
         cur.close()
-        _pool.putconn(conn)
+        pool.putconn(conn)
 
     def delete(self):
         """
         Delete the row from database.
         """
-        conn = _pool.getconn()
+        pool = get_pool()
+        conn = pool.getconn()
         cur = conn.cursor()
         template = Template('DELETE FROM {{table}}\n'
                             'WHERE id = %s')
@@ -132,7 +134,7 @@ class SqlModel:
             setattr(self, col, None)
         conn.commit()
         cur.close()
-        _pool.putconn(conn)
+        pool.putconn(conn)
 
     def _load(self):
         """
@@ -140,7 +142,8 @@ class SqlModel:
         Required id is not None
         """
         assert self.id is not None
-        conn = _pool.getconn()
+        pool = get_pool()
+        conn = pool.getconn()
         cur = conn.cursor()
         template = Template('SELECT {{cols}}\n'
                             'FROM {{table}}\n'
@@ -164,7 +167,7 @@ class SqlModel:
                 raise NotImplementedError('New error. Need to check')
 
         cur.close()
-        _pool.putconn(conn)
+        pool.putconn(conn)
 
 
 class UniqueViolatedError(Exception):
