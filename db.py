@@ -1,5 +1,14 @@
 """
 Version: 0.4
+Step-by-step usage for this module:
+- (Optional) Define POSTGRES_POOL_MIN_CONN, POSTGRES_POOL_MAX_CONN, 
+POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT
+in environment file then source it. Otherwise, you need to supply then in `get_pool`
+- get a pool from `pool = get_pool()`)
+- from the pool, get the a connection `conn = pool.getconn()`
+- from te connection, get the cursor `cur = conn.cursor()`
+- working with the database through the cursor
+- Don't forget to commit the connection (`conn.commit()`) and release it `pool.putconn(conn)`
 """
 
 import os
@@ -21,9 +30,9 @@ def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None
     global _pool
     if _pool is None:
         if minconn is None:
-            minconn = os.environ['PG_POOL_MIN_CONN']
+            minconn = os.environ['POSTGRES_POOL_MIN_CONN']
         if maxconn is None:
-            maxconn = os.environ['PG_POOL_MAX_CONN']
+            maxconn = os.environ['POSTGRES_POOL_MAX_CONN']
         if database is None:
             database = os.environ['POSTGRES_USER']
         if user is None:
