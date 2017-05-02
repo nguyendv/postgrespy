@@ -12,9 +12,7 @@ in environment file then source it. Otherwise, you need to supply then in `get_p
 """
 
 import os
-import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
-from jinja2 import Template
 
 
 _pool = None

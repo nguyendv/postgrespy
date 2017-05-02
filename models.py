@@ -2,6 +2,7 @@ from postgrespy.db import get_pool, UniqueViolatedError
 from postgrespy.fields import BaseField
 from jinja2 import Template
 from psycopg2 import DatabaseError
+from typing import Tuple
 
 
 class Model:
@@ -41,6 +42,24 @@ class Model:
             self._insert()
         else:
             self._update()
+
+    @classmethod
+    def getone(cls, where: str = None, values: Tuple = None):
+        pool = get_pool()
+        conn = pool.getconn()
+        cur = conn.cursor()
+        fields = [f for f in dir(cls) if not f.startswith(
+            '__') and issubclass(type(getattr(cls, f)), BaseField)]
+        stmt = 'SELECT ' + ','.join(fields) + ' FROM ' + cls.Meta.table
+        if where is not None:
+            stmt = stmt + ' WHERE ' + where
+        print(stmt)
+        cur.execute(stmt, values)
+        row = cur.fetchone()
+        ret = cls()
+        for i, f in enumerate(fields):
+            setattr(ret, f, row[i])
+        return ret
 
     def delete(self):
         """

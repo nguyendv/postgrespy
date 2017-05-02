@@ -22,3 +22,8 @@ def test_sql_model():
 
     still_tom = Student(id=tom.id)
     assert still_tom.age == 27
+
+
+def test_select_query():
+    peter = Student.getone('name = %s', ('Peter',))
+    assert peter.age == 15
