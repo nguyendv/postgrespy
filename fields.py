@@ -5,19 +5,19 @@ class BaseField:
         pass
 
 
-class TextField(BaseField):
+class TextField(BaseField, str):
     def __init__(self, value: str = None):
         super().__init__()
         self.value = value
 
 
-class EnumField(BaseField):
+class EnumField(BaseField, str):
     def __init__(self, value: str = None):
         super().__init__()
         self.value = value
 
 
-class IntegerField(BaseField):
+class IntegerField(BaseField, int):
     def __init__(self, value: int = None):
         super().__init__()
         self.value = value

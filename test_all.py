@@ -13,6 +13,7 @@ class Student(Model):
 def test_sql_model():
     peter = Student(name='Peter', age=15)
     peter.save()
+    assert peter.age == 15
 
     still_peter = Student(id=peter.id)
     assert still_peter.name == 'Peter'
