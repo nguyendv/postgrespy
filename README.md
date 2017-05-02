@@ -1,6 +1,10 @@
 db.py: a dead simple python ORM
 
 ## CHANGE LOGS
+#### Version v0.5
+BREAKING CHANGES:
+- Start moving to a ORM-like library
+
 #### Version v0.4
 BREAKING CHANGES:
 - You need to call `get_pool()` whenever you want to access the pool, internally or externally.
