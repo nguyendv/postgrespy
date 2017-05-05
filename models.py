@@ -1,11 +1,11 @@
 from postgrespy.db import get_pool, UniqueViolatedError
-from postgrespy.fields import BaseField
+from postgrespy.fields import BaseField, BooleanField
 from jinja2 import Template
 from psycopg2 import DatabaseError
 from typing import Tuple
 
 
-class Model:
+class Model(object):
     """
     Base class for SqlModel
 
@@ -29,6 +29,12 @@ class Model:
 
         if self.id is not None:
             self._load()
+
+    def __setattr__(self, name, value):
+        if type(value) == bool:
+            setattr(self, name, BooleanField(value))
+        else:
+            super().__setattr__(name, value)
 
     def save(self):
         """
@@ -155,8 +161,10 @@ class Model:
         stmt = template.render(table=self.Meta.table,
                                field_value_pairs=','.join(
                                    f + '=%s' for f in self.fields))
+        for f in self.fields:
+            print(f, getattr(self, f))
         values = [getattr(self, f).value for f in self.fields]
-        cur.execute(stmt, values + (self.id,))
+        cur.execute(stmt, values + [self.id])
         conn.commit()
         cur.close()
         pool.putconn(conn)

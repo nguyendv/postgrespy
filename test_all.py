@@ -1,10 +1,11 @@
-from .models import Model
-from .fields import TextField, IntegerField
+from postgrespy.models import Model
+from postgrespy.fields import TextField, IntegerField, BooleanField
 
 
 class Student(Model):
     name = TextField()
     age = IntegerField()
+    is_male = BooleanField()
 
     class Meta:
         table = 'students'
@@ -23,6 +24,18 @@ def test_sql_model():
 
     still_tom = Student(id=tom.id)
     assert still_tom.age == 27
+
+
+def test_boolean_field():
+    transgender = Student(name='HG', age=27, is_male=True)
+    transgender.save()
+    assert transgender.is_male == True
+
+    transgender.is_male = False
+    transgender.save()
+
+    still_trangender = Student(id=transgender.id)
+    assert still_trangender.is_male == False
 
 
 def test_select_query():
