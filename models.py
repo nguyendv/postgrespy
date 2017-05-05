@@ -1,8 +1,9 @@
 from postgrespy.db import get_pool, UniqueViolatedError
-from postgrespy.fields import BaseField, BooleanField
+from postgrespy.fields import BaseField, BooleanField, JsonBField
 from jinja2 import Template
 from psycopg2 import DatabaseError
 from typing import Tuple
+import json
 
 
 class Model(object):
@@ -132,7 +133,12 @@ class Model(object):
                                                      for f in self.fields)
                                )
         try:
-            values = [getattr(self, f).value for f in self.fields]
+            values = []
+            for f in self.fields:
+                if type(getattr(self, f)) == JsonBField:
+                    values.append(json.dumps(getattr(self, f).value))
+                else:
+                    values.append(getattr(self, f).value)
             cur.execute(stmt, values)
             self.id = cur.fetchone()[0]
             conn.commit()

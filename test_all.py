@@ -1,5 +1,5 @@
 from postgrespy.models import Model
-from postgrespy.fields import TextField, IntegerField, BooleanField
+from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField
 
 
 class Student(Model):
@@ -9,6 +9,15 @@ class Student(Model):
 
     class Meta:
         table = 'students'
+
+
+class Product(Model):
+    name = TextField()
+    owner_id = IntegerField()
+    detail = JsonBField()
+
+    class Meta:
+        table = 'products'
 
 
 def test_sql_model():
@@ -36,6 +45,19 @@ def test_boolean_field():
 
     still_trangender = Student(id=transgender.id)
     assert still_trangender.is_male == False
+
+
+def test_jsonb_field():
+    peter = Student.getone('name = %s', ('Peter',))
+    meth = Product(name='meth', owner_id=peter.id, detail={
+        'color': 'red',
+        'weight': 5
+    })
+    meth.save()
+
+    still_meth = Product(id=meth.id)
+    print(still_meth.detail)
+    assert(meth.detail['color'] == 'red')
 
 
 def test_select_query():

@@ -1,3 +1,4 @@
+import json
 
 
 class BaseField:
@@ -28,10 +29,14 @@ class BooleanField(BaseField):
         super().__init__()
         self.value = value
 
-    def __bool__(self):
-        if self.value is None:
-            return False
-        return self.value
-
     def __eq__(self, val: bool):
         return self.value is val
+
+
+class JsonBField(BaseField, object):
+    def __init__(self, value: object = None):
+        super().__init__()
+        self.value = value
+
+    def __getitem__(self, key):
+        return self.value[key]
