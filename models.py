@@ -56,6 +56,7 @@ class Model(object):
         cur = conn.cursor()
         fields = [f for f in dir(cls) if not f.startswith(
             '__') and issubclass(type(getattr(cls, f)), BaseField)]
+        fields = fields + ['id']
         stmt = 'SELECT ' + ','.join(fields) + ' FROM ' + cls.Meta.table
         if where is not None:
             stmt = stmt + ' WHERE ' + where
