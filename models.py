@@ -69,6 +69,28 @@ class Model(object):
             setattr(ret, f, row[i])
         return ret
 
+    @classmethod
+    def getall(cls, where: str = None, values: Tuple = None):
+        pool = get_pool()
+        conn = pool.getconn()
+        cur = conn.cursor()
+        fields = [f for f in dir(cls) if not f.startswith(
+            '__') and issubclass(type(getattr(cls, f)), BaseField)]
+        fields = fields + ['id']
+        stmt = 'SELECT ' + ','.join(fields) + ' FROM ' + cls.Meta.table
+        if where is not None:
+            stmt = stmt + ' WHERE ' + where
+        print(stmt)
+        cur.execute(stmt, values)
+        rows = cur.fetchall()
+        ret = []
+        for row in rows:
+            r = cls()
+            for i, f in enumerate(fields):
+                setattr(r, f, row[i])
+            ret.append(r)
+        return ret
+
     def delete(self):
         """
         Delete the row from database.

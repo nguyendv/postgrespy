@@ -60,6 +60,11 @@ def test_jsonb_field():
     assert(meth.detail['color'] == 'red')
 
 
-def test_select_query():
+def test_get_one():
     peter = Student.getone('name = %s', ('Peter',))
     assert peter.age == 15
+
+
+def test_get_all():
+    all_adults = Student.getall('age > %s', (15,))
+    assert len(all_adults) > 1
