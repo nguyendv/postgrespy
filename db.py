@@ -48,6 +48,19 @@ def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None
     return _pool
 
 
+def get_conn_cur():
+    pool = get_pool()
+    conn = pool.getconn()
+    cur = conn.cursor()
+    return conn, cur
+
+
+def close(conn, cur):
+    cur.close()
+    pool = get_pool()
+    pool.putconn(conn)
+
+
 class UniqueViolatedError(Exception):
     """Exception rasied for unique constrain violated
     """

@@ -1,4 +1,4 @@
-from postgrespy.db import get_pool, UniqueViolatedError
+from postgrespy.db import get_conn_cur, close, UniqueViolatedError
 from postgrespy.fields import BaseField, BooleanField, JsonBField
 from jinja2 import Template
 from psycopg2 import DatabaseError
@@ -52,9 +52,7 @@ class Model(object):
 
     @classmethod
     def getone(cls, where: str = None, values: Tuple = None):
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
         fields = [f for f in dir(cls) if not f.startswith(
             '__') and issubclass(type(getattr(cls, f)), BaseField)]
         fields = fields + ['id']
@@ -67,13 +65,12 @@ class Model(object):
         ret = cls()
         for i, f in enumerate(fields):
             setattr(ret, f, row[i])
+        close(conn, cur)
         return ret
 
     @classmethod
     def getall(cls, where: str = None, values: Tuple = None):
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
         fields = [f for f in dir(cls) if not f.startswith(
             '__') and issubclass(type(getattr(cls, f)), BaseField)]
         fields = fields + ['id']
@@ -89,22 +86,20 @@ class Model(object):
             for i, f in enumerate(fields):
                 setattr(r, f, row[i])
             ret.append(r)
+        close(conn, cur)
         return ret
 
     def delete(self):
         """
         Delete the row from database.
         """
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
         template = Template('DELETE FROM {{table}}\n'
                             'WHERE id = %s')
         stmt = template.render(table=self.Meta.table)
         cur.execute(stmt, (self.id,))
         conn.commit()
-        cur.close()
-        pool.putconn(conn)
+        close(conn, cur)
 
     def _load(self):
         """
@@ -112,9 +107,7 @@ class Model(object):
         Required id is not None
         """
         assert self.id is not None
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
         template = Template('SELECT {{fields}}\n'
                             'FROM {{table}}\n'
                             'WHERE id=%s\n'
@@ -135,14 +128,11 @@ class Model(object):
             else:
                 raise NotImplementedError('New error. Need to check')
 
-        cur.close()
-        pool.putconn(conn)
+        close(conn, cur)
 
     def _insert(self):
         """ Execute the INSERT query"""
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
 
         template = Template('INSERT INTO {{table}}\n'
                             '( {{fields}} )\n'
@@ -175,14 +165,11 @@ class Model(object):
             else:
                 raise NotImplementedError(
                     'Unhandled error. Need to check.')
-        cur.close()
-        pool.putconn(conn)
+        close(conn, cur)
 
     def _update(self):
         """ Execute the UPDATE query"""
-        pool = get_pool()
-        conn = pool.getconn()
-        cur = conn.cursor()
+        conn, cur = get_conn_cur()
 
         template = Template('UPDATE {{table}}\n'
                             'SET {{ field_value_pairs }} \n'
@@ -194,6 +181,6 @@ class Model(object):
             print(f, getattr(self, f))
         values = [getattr(self, f).value for f in self.fields]
         cur.execute(stmt, values + [self.id])
+
         conn.commit()
-        cur.close()
-        pool.putconn(conn)
+        close(conn, cur)

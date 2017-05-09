@@ -68,3 +68,7 @@ def test_get_one():
 def test_get_all():
     all_adults = Student.getall('age > %s', (15,))
     assert len(all_adults) > 1
+
+
+def test_joins():
+    pass

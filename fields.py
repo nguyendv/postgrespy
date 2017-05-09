@@ -1,6 +1,3 @@
-import json
-
-
 class BaseField:
     def __init__(self):
         pass
