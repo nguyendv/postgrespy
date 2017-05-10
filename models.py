@@ -1,5 +1,6 @@
 from postgrespy.db import get_conn_cur, close, UniqueViolatedError
 from postgrespy.fields import BaseField, BooleanField, JsonBField
+from postgrespy.queries import Select
 from jinja2 import Template
 from psycopg2 import DatabaseError
 from typing import Tuple
@@ -52,41 +53,16 @@ class Model(object):
 
     @classmethod
     def getone(cls, where: str = None, values: Tuple = None):
-        conn, cur = get_conn_cur()
-        fields = [f for f in dir(cls) if not f.startswith(
-            '__') and issubclass(type(getattr(cls, f)), BaseField)]
-        fields = fields + ['id']
-        stmt = 'SELECT ' + ','.join(fields) + ' FROM ' + cls.Meta.table
-        if where is not None:
-            stmt = stmt + ' WHERE ' + where
-        print(stmt)
-        cur.execute(stmt, values)
-        row = cur.fetchone()
-        ret = cls()
-        for i, f in enumerate(fields):
-            setattr(ret, f, row[i])
-        close(conn, cur)
+        with Select(cls, where) as select:
+            select.execute(values)
+            ret = select.fetchone()
         return ret
 
     @classmethod
     def getall(cls, where: str = None, values: Tuple = None):
-        conn, cur = get_conn_cur()
-        fields = [f for f in dir(cls) if not f.startswith(
-            '__') and issubclass(type(getattr(cls, f)), BaseField)]
-        fields = fields + ['id']
-        stmt = 'SELECT ' + ','.join(fields) + ' FROM ' + cls.Meta.table
-        if where is not None:
-            stmt = stmt + ' WHERE ' + where
-        print(stmt)
-        cur.execute(stmt, values)
-        rows = cur.fetchall()
-        ret = []
-        for row in rows:
-            r = cls()
-            for i, f in enumerate(fields):
-                setattr(r, f, row[i])
-            ret.append(r)
-        close(conn, cur)
+        with Select(cls, where) as select:
+            select.execute(values)
+            ret = select.fetchall()
         return ret
 
     def delete(self):
@@ -103,32 +79,14 @@ class Model(object):
 
     def _load(self):
         """
-        Load the row from database
+        Load the row from database, given the id
         Required id is not None
         """
-        assert self.id is not None
-        conn, cur = get_conn_cur()
-        template = Template('SELECT {{fields}}\n'
-                            'FROM {{table}}\n'
-                            'WHERE id=%s\n'
-                            'LIMIT 1')
-        stmt = template.render(table=self.Meta.table,
-                               fields=','.join(self.fields))
-        cur.execute(stmt, (self.id,))
-        row = cur.fetchone()
-        try:
-            i = 0
-            for field in self.fields:
-                setattr(self, field, row[i])
-                i = i + 1
-        except TypeError as e:
-            # cannot access row[i]
-            if str(e) == '\'NoneType\' object is not subscriptable':
-                raise NotImplementedError('New error. Need to check')
-            else:
-                raise NotImplementedError('New error. Need to check')
-
-        close(conn, cur)
+        with Select(self.__class__, 'id=%s') as select:
+            select.execute((self.id,))
+            ret = select.fetchone()
+            for f in self.fields:
+                setattr(self, f, getattr(ret, f))
 
     def _insert(self):
         """ Execute the INSERT query"""
