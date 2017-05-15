@@ -1,6 +1,6 @@
 from postgrespy.models import Model
 from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField
-from postgrespy.queries import Select
+from postgrespy.queries import Select, Join
 
 
 class Student(Model):
@@ -77,8 +77,6 @@ def test_jsonb_field():
     print(still_meth.detail)
     assert(meth.detail['color'] == 'red')
 
-    meth.delete()
-    still_meth.delete()
     tom.delete()
 
 
@@ -95,4 +93,34 @@ def test_get_all():
 
 
 def test_joins():
-    pass
+    tom = Student(name='Tom', age=20)
+    jerry = Student(name='Jerry', age=20)
+    bob = Student(name='Bob', age=20)
+    tom.save()
+    jerry.save()
+    bob.save()
+
+    weed = Product(name='weed', owner_id=tom.id, detail={})
+    smoke = Product(name='smoke', owner_id=tom.id, detail={})
+    book = Product(name='book', owner_id=jerry.id, detail={})
+    weed.save()
+    smoke.save()
+    book.save()
+
+    with Join(Student, 'INNER JOIN', Product, 'students.id = products.owner_id') as join:
+        join.execute()
+        ret = join.fetchall()
+
+    assert len(ret) == 3
+    print(ret[1])
+    still_tom, still_smoke = ret[1]
+    print(still_tom)
+    print(still_smoke)
+    assert still_tom.name == 'Tom'
+    assert still_smoke.name == 'smoke'
+
+    tom.delete()
+    jerry.delete()
+    bob.delete()
+
+    assert len(Product.getall()) == 0
