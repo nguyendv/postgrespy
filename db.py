@@ -27,6 +27,13 @@ def get_pool(minconn=None, maxconn=None, database=None, user=None, password=None
     """
     global _pool
     if _pool is None:
+        """
+        TODO: need to check in production: if the app run inside something like
+        gunicorn, how many instance of _pool is created?
+        With these numbers, and by researching the pool size effect on Postgresql
+        performance, optimal pool size can be found out.
+        """
+        print("New pool is created. Should it be created often?")
         if minconn is None:
             minconn = os.environ['POSTGRES_POOL_MIN_CONN']
         if maxconn is None:

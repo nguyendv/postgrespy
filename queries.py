@@ -40,7 +40,7 @@ class Query:
 
 
 class Select(Query):
-    def __init__(self, model_cls, where: str):
+    def __init__(self, model_cls, where: str = None):
         super().__init__(model_cls)
         self.stmt = 'SELECT ' + ','.join(self.fields) + \
             ' FROM ' + model_cls.Meta.table

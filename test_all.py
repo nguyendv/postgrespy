@@ -82,21 +82,13 @@ def test_jsonb_field():
     tom.delete()
 
 
-def test_get_one():
-    pete1 = Student(name='Pete', age=15)
-    pete1.save()
-    pete = Student.getone('name = %s', ('Pete',))
-    assert pete.age == 15
-    pete.delete()
-
-
 def test_get_all():
     phil = Student(name='Phil', age=27)
     phil.save()
     thor = Student(name='Thor', age=33)
     thor.save()
 
-    all_adults = Student.getall('age >= %s', (18,))
+    all_adults = Student.getall()
     assert len(all_adults) == 2
     phil.delete()
     thor.delete()

@@ -52,16 +52,9 @@ class Model(object):
             self._update()
 
     @classmethod
-    def getone(cls, where: str = None, values: Tuple = None):
-        with Select(cls, where) as select:
-            select.execute(values)
-            ret = select.fetchone()
-        return ret
-
-    @classmethod
-    def getall(cls, where: str = None, values: Tuple = None):
-        with Select(cls, where) as select:
-            select.execute(values)
+    def getall(cls):
+        with Select(cls) as select:
+            select.execute()
             ret = select.fetchall()
         return ret
 
