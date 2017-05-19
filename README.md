@@ -1,6 +1,9 @@
 db.py: a dead simple python ORM
 
 ## CHANGE LOGS
+#### Version v0.17.05.01
+- query fetchone returns None if no row fetched
+
 #### Version v0.5
 BREAKING CHANGES:
 - Start moving to a ORM-like library

@@ -22,6 +22,8 @@ class Query:
 
     def fetchone(self):
         row = self.cur.fetchone()
+        if row is None:
+            return None
         ret = self.model_cls()
         for i, f in enumerate(self.fields):
             setattr(ret, f, row[i])
@@ -78,6 +80,8 @@ class Join(Query):
 
     def fetchone(self):
         row = self.cur.fetchone()
+        if row is None:
+            return None
         ret_left = self.model_cls_left()
         ret_right = self.model_cls_right()
 
