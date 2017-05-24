@@ -1,4 +1,4 @@
-from postgrespy.fields import BaseField
+from postgrespy.fields import BaseField, IntegerField
 from postgrespy.db import get_conn_cur, close
 from typing import Tuple
 
@@ -41,7 +41,7 @@ class Query:
 
 
 class Select(Query):
-    def __init__(self, model_cls, where: str = None):
+    def __init__(self, model_cls, where: str=None):
         super().__init__(model_cls)
         self.stmt = 'SELECT ' + ','.join(self.fields) + \
             ' FROM ' + model_cls.Meta.table
@@ -102,12 +102,10 @@ class Join(Query):
             r_right = self.model_cls_right()
 
             for i, f in enumerate(self.fields_left):
-                print(f, row[i])
                 setattr(r_left, f, row[i])
 
             left_len = len(self.fields_left)
             for i, f in enumerate(self.fields_right):
-                print(f, row[i + left_len])
                 setattr(r_right, f, row[i + left_len])
 
             ret.append((r_left, r_right,))

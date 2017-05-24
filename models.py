@@ -1,9 +1,8 @@
 from postgrespy.db import get_conn_cur, close, UniqueViolatedError
-from postgrespy.fields import BaseField, BooleanField, JsonBField
+from postgrespy.fields import BaseField, BooleanField, JsonBField, IntegerField
 from postgrespy.queries import Select
 from jinja2 import Template
 from psycopg2 import DatabaseError
-from typing import Tuple
 import json
 
 
@@ -15,14 +14,12 @@ class Model(object):
     """
 
     def __init__(self, id=None, **kwargs):
-        self.id = id
+        if id is not None:
+            setattr(self, 'id', id)
+        else:
+            self.id = None
         for k in kwargs.keys():
-            if k in dir(self):
-                """ Cast the value to the correct type, then rewrite that key to that value"""
-                cls = type(getattr(self, k))
-                setattr(self, k, cls(kwargs[k]))
-            else:
-                setattr(self, k, kwargs[k])
+            setattr(self, k, kwargs[k])
 
         self.fields = []
         for k in dir(self):
@@ -33,8 +30,11 @@ class Model(object):
             self._load()
 
     def __setattr__(self, name, value):
-        if type(value) == bool:
-            setattr(self, name, BooleanField(value))
+        if name in dir(self):
+            field_cls = type(getattr(self, name))
+            if name == 'id':
+                field_cls = IntegerField
+            super().__setattr__(name, field_cls(value))
         else:
             super().__setattr__(name, value)
 
@@ -79,7 +79,7 @@ class Model(object):
             select.execute((self.id,))
             ret = select.fetchone()
             for f in self.fields:
-                setattr(self, f, getattr(ret, f))
+                setattr(self, f, getattr(ret, f).value)
 
     def _insert(self):
         """ Execute the INSERT query"""
@@ -128,8 +128,6 @@ class Model(object):
         stmt = template.render(table=self.Meta.table,
                                field_value_pairs=','.join(
                                    f + '=%s' for f in self.fields))
-        for f in self.fields:
-            print(f, getattr(self, f))
         values = [getattr(self, f).value for f in self.fields]
         cur.execute(stmt, values + [self.id])
 

@@ -24,12 +24,15 @@ class Product(Model):
 def test_save_load_delete():
     peter = Student(name='Peter', age=15)
     peter.save()
+    assert(type(peter.age) == IntegerField)
     assert peter.age == 15
 
     still_peter = Student(id=peter.id)
-    print('Peter: ', still_peter.name)
+    assert(type(still_peter.age) == IntegerField)
+    still_peter.age = 16
+    still_peter.save()
     assert still_peter.name == 'Peter'
-    assert still_peter.age == 15
+    assert still_peter.age == 16
 
     another_peter = Student(name='Peter', age=17)
     another_peter.save()
@@ -73,8 +76,6 @@ def test_jsonb_field():
     })
     meth.save()
 
-    still_meth = Product(id=meth.id)
-    print(still_meth.detail)
     assert(meth.detail['color'] == 'red')
 
     tom.delete()
@@ -112,10 +113,7 @@ def test_joins():
         ret = join.fetchall()
 
     assert len(ret) == 3
-    print(ret[1])
     still_tom, still_smoke = ret[1]
-    print(still_tom)
-    print(still_smoke)
     assert still_tom.name == 'Tom'
     assert still_smoke.name == 'smoke'
 
