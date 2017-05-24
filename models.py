@@ -31,10 +31,11 @@ class Model(object):
 
     def __setattr__(self, name, value):
         if name in dir(self):
-            field_cls = type(getattr(self, name))
-            if name == 'id':
-                field_cls = IntegerField
-            super().__setattr__(name, field_cls(value))
+            if value is not None:
+                field_cls = type(getattr(self, name))
+                if name == 'id':
+                    field_cls = IntegerField
+                super().__setattr__(name, field_cls(value))
         else:
             super().__setattr__(name, value)
 
@@ -79,7 +80,8 @@ class Model(object):
             select.execute((self.id,))
             ret = select.fetchone()
             for f in self.fields:
-                setattr(self, f, getattr(ret, f).value)
+                if getattr(ret, f) is not None:
+                    setattr(self, f, getattr(ret, f).value)
 
     def _insert(self):
         """ Execute the INSERT query"""
@@ -128,7 +130,12 @@ class Model(object):
         stmt = template.render(table=self.Meta.table,
                                field_value_pairs=','.join(
                                    f + '=%s' for f in self.fields))
-        values = [getattr(self, f).value for f in self.fields]
+        values = []
+        for f in self.fields:
+            if getattr(self, f) is None:
+                values.append(None)
+            else:
+                values.append(getattr(self, f).value)
         cur.execute(stmt, values + [self.id])
 
         conn.commit()
