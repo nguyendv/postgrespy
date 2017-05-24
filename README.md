@@ -1,6 +1,9 @@
 db.py: a dead simple python ORM
 
 ## CHANGE LOGS
+#### Version v0.17.05.02
+- For postgrespy.models.Model, setattr now accepts Python types as arguments then cast them
+into postgrespy.fields types
 #### Version v0.17.05.01
 - query fetchone returns None if no row fetched
 
