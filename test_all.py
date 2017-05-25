@@ -21,6 +21,14 @@ class Product(Model):
         table = 'products'
 
 
+class Car(Model):
+    name = TextField()
+    owner_id = IntegerField()
+
+    class Meta:
+        table = 'cars'
+
+
 def test_save_load_delete():
     peter = Student(name='Peter', age=15)
     peter.save()
@@ -104,18 +112,31 @@ def test_joins():
     weed = Product(name='weed', owner_id=tom.id, detail={})
     smoke = Product(name='smoke', owner_id=tom.id, detail={})
     book = Product(name='book', owner_id=jerry.id, detail={})
+
     weed.save()
     smoke.save()
     book.save()
+
+    toyota = Car(name='Toyota', owner_id=tom.id)
+    nissan = Car(name='Nissan', owner_id=tom.id)
+    toyota.save()
+    nissan.save()
 
     with Join(Student, 'INNER JOIN', Product, 'students.id = products.owner_id') as join:
         join.execute()
         ret = join.fetchall()
 
     assert len(ret) == 3
+
     still_tom, still_smoke = ret[1]
     assert still_tom.name == 'Tom'
     assert still_smoke.name == 'smoke'
+
+    with Join(Student, 'INNER JOIN', Product, 'students.id = products.owner_id',
+                       'INNER JOIN', Car, 'students.id = cars.owner_id') as join:
+        join.execute()
+        ret = join.fetchall()
+    assert len(ret) == 4
 
     tom.delete()
     jerry.delete()
