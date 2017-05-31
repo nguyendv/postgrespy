@@ -1,5 +1,5 @@
 from postgrespy.db import get_conn_cur, close, UniqueViolatedError
-from postgrespy.fields import BaseField, BooleanField, JsonBField, IntegerField
+from postgrespy.fields import BaseField, JsonBField, IntegerField
 from postgrespy.queries import Select
 from jinja2 import Template
 from psycopg2 import DatabaseError
@@ -53,11 +53,33 @@ class Model(object):
             self._update()
 
     @classmethod
-    def getall(cls):
-        with Select(cls) as select:
-            select.execute()
-            ret = select.fetchall()
-        return ret
+    def fetchone(cls, **kwargs):
+        wheres = [k + '=%s' for k in kwargs.keys()]
+        if len(kwargs) > 0:
+            where = ' and '.join(wheres)
+            values = tuple(kwargs.values())
+        else:
+            where = None
+            values = None
+        with Select(cls, where) as select:
+            select.execute(values)
+            one = select.fetchone()
+            if one is None:
+                return None
+        return one
+
+    @classmethod
+    def fetchall(cls, **kwargs):
+        wheres = [k + '=%s' for k in kwargs.keys()]
+        if len(kwargs) > 0:
+            where = ' and '.join(wheres)
+            values = tuple(kwargs.values())
+        else:
+            where = None
+            values = None
+        with Select(cls, where) as select:
+            select.execute(values)
+            return select.fetchall()
 
     def delete(self):
         """

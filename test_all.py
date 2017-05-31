@@ -35,7 +35,7 @@ class SaveLoadDeleteTestCase(TestCase):
         self.peter = Student(name='Peter', age=15)
         self.peter.save()
         self.still_peter = Student(id=self.peter.id)
-        # self.no_one = Student.fetchone(id=999, name='hehe')
+        self.no_one = Student.fetchone(id=999, name='hehe')
 
         self.another_peter = Student(name='Peter', age=17)
         self.another_peter.save()
@@ -55,6 +55,8 @@ class SaveLoadDeleteTestCase(TestCase):
             select.execute(('Peter', ))
             two_peters = select.fetchall()
             assert len(two_peters) == 2
+
+        assert self.no_one is None
 
     def tearDown(self):
         self.peter.delete()
@@ -100,7 +102,7 @@ class JsonBTestCase(TestCase):
         self.tom.delete()
 
 
-class GetAllTestCase(TestCase):
+class FetchAllTestCase(TestCase):
     def setUp(self):
         self.phil = Student(name='Phil', age=27)
         self.phil.save()
@@ -108,8 +110,10 @@ class GetAllTestCase(TestCase):
         self.thor.save()
 
     def test_get_all(self):
-        all_adults = Student.getall()
+        all_adults = Student.fetchall()
+        all_thors = Student.fetchall(name='Thor', age=33)
         assert len(all_adults) == 2
+        assert len(all_thors) == 1
 
     def tearDown(self):
         self.phil.delete()
@@ -169,9 +173,9 @@ class NothingTestCase(TestCase):
         pass
 
     def test_nothing(self):
-        assert (len(Student.getall()) == 0)
-        assert (len(Product.getall()) == 0)
-        assert (len(Car.getall()) == 0)
+        assert (len(Student.fetchall()) == 0)
+        assert (len(Product.fetchall()) == 0)
+        assert (len(Car.fetchall()) == 0)
 
     def tearDown(self):
         pass
