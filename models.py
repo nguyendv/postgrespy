@@ -14,20 +14,14 @@ class Model(object):
     """
 
     def __init__(self, id=None, **kwargs):
-        if id is not None:
-            setattr(self, 'id', id)
-        else:
-            self.id = None
+        self.id = id
         for k in kwargs.keys():
             setattr(self, k, kwargs[k])
 
         self.fields = []
         for k in dir(self):
-            if issubclass(type(getattr(self, k)), BaseField) and k != 'id':
+            if issubclass(type(getattr(self, k)), BaseField):
                 self.fields.append(k)
-
-        if self.id is not None:
-            self._load()
 
     def __setattr__(self, name, value):
         if name in dir(self):
@@ -92,18 +86,6 @@ class Model(object):
         cur.execute(stmt, (self.id,))
         conn.commit()
         close(conn, cur)
-
-    def _load(self):
-        """
-        Load the row from database, given the id
-        Required id is not None
-        """
-        with Select(self.__class__, 'id=%s') as select:
-            select.execute((self.id,))
-            ret = select.fetchone()
-            for f in self.fields:
-                if getattr(ret, f) is not None:
-                    setattr(self, f, getattr(ret, f).value)
 
     def _insert(self):
         """ Execute the INSERT query"""

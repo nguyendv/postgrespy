@@ -34,7 +34,7 @@ class SaveLoadDeleteTestCase(TestCase):
     def setUp(self):
         self.peter = Student(name='Peter', age=15)
         self.peter.save()
-        self.still_peter = Student(id=self.peter.id)
+        self.still_peter = Student.fetchone(id=self.peter.id)
         self.no_one = Student.fetchone(id=999, name='hehe')
 
         self.another_peter = Student(name='Peter', age=17)
@@ -76,7 +76,7 @@ class BooleanTestCase(TestCase):
         self.transgender.is_male = False
         self.transgender.save()
 
-        still_trangender = Student(id=self.transgender.id)
+        still_trangender = Student.fetchone(id=self.transgender.id)
         assert still_trangender.is_male == False
 
         still_trangender.delete()
