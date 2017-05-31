@@ -1,6 +1,11 @@
 postgrespy: a dead simple postgres python ORM
 
 ## CHANGE LOGS
+#### Version v0.17.05.03
+- remove Models._load
+- implement Models.fetchone(**kwargs=None)
+- implement Models.fetchall(**kwargs=None)
+- Models.getall becomes Models.fetchall(None)
 #### Version v0.17.05.02
 - For postgrespy.models.Model, setattr now accepts Python types as arguments then cast them
 into postgrespy.fields types
