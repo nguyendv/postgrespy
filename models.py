@@ -139,7 +139,10 @@ class Model(object):
             if getattr(self, f) is None:
                 values.append(None)
             else:
-                values.append(getattr(self, f).value)
+                if type(getattr(self, f)) == JsonBField:
+                    values.append(json.dumps(getattr(self, f).value))
+                else:
+                    values.append(getattr(self, f).value)
         cur.execute(stmt, values + [self.id])
 
         conn.commit()
