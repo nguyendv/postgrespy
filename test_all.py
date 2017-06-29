@@ -64,6 +64,23 @@ class SaveLoadDeleteTestCase(TestCase):
         self.another_peter.delete()
 
 
+class NoneFieldTestCase(TestCase):
+    """ Test if a field can be set to None"""
+
+    def setUp(self):
+        self.tom = Student(name='Tom', age=27)
+        self.tom.save()
+
+    def test_set_age_to_none(self):
+        self.tom.age = None
+        self.tom.save()
+        still_tom = Student.fetchone(id=self.tom.id)
+        assert still_tom.age is None
+
+    def tearDown(self):
+        self.tom.delete()
+
+
 class BooleanTestCase(TestCase):
     def setUp(self):
         self.transgender = Student(name='HG', age=27, is_male=True)
@@ -97,6 +114,11 @@ class JsonBTestCase(TestCase):
 
     def test_jsonb_field(self):
         assert(self.meth.detail['color'] == 'red')
+        self.meth.detail['price'] = 5
+        self.meth.save()
+
+        meth2 = Product.fetchone(id=self.meth.id)
+        assert(meth2.detail['price'] == 5)
 
     def tearDown(self):
         self.tom.delete()

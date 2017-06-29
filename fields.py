@@ -30,10 +30,13 @@ class BooleanField(BaseField):
         return self.value is val
 
 
-class JsonBField(BaseField, object):
+class JsonBField(BaseField, dict):
     def __init__(self, value: object = None):
         super().__init__()
         self.value = value
 
     def __getitem__(self, key):
         return self.value[key]
+
+    def __setitem__(self, key, val):
+        self.value[key] = val
