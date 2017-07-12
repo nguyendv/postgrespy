@@ -66,9 +66,3 @@ def close(conn, cur):
     cur.close()
     pool = get_pool()
     pool.putconn(conn)
-
-
-class UniqueViolatedError(Exception):
-    """Exception rasied for unique constrain violated
-    """
-    pass

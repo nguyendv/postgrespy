@@ -1,4 +1,5 @@
-from postgrespy.db import get_conn_cur, close, UniqueViolatedError
+from postgrespy.db import get_conn_cur, close
+from postgrespy import UniqueViolatedError
 from postgrespy.fields import BaseField, JsonBField, IntegerField
 from postgrespy.queries import Select
 from jinja2 import Template

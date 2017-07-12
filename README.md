@@ -1,6 +1,8 @@
 postgrespy: a dead simple postgres python ORM
 
 ## CHANGE LOGS
+#### Version 0.6.0 (July 2017)
+- Move exception definitions to __init__.py
 #### Version v17.06.01-beta
 - Allow JSOBField to set value
 #### Version v0.17.05.03
