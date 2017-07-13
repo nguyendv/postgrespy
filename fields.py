@@ -40,3 +40,14 @@ class JsonBField(BaseField, dict):
 
     def __setitem__(self, key, val):
         self.value[key] = val
+
+
+class ArrayField(BaseField, list):
+    def __init__(self, value: list = None):
+        super().__init__()
+        self.value = value
+        if value is not None:
+            self.__len__ = len(value)
+
+    def __getitem__(self, index):
+        return self.value[index]

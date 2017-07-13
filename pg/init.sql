@@ -13,4 +13,10 @@ create table cars (
     id serial primary key,
     name text,
     owner_id integer references students (id) on delete CASCADE
-)
+);
+
+create table movies (
+    id serial primary key,
+    name text,
+    casts text[]
+);

@@ -1,5 +1,5 @@
 from postgrespy.models import Model
-from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField
+from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField, ArrayField
 from postgrespy.queries import Select, Join
 from unittest import TestCase
 
@@ -28,6 +28,14 @@ class Car(Model):
 
     class Meta:
         table = 'cars'
+
+
+class Movie(Model):
+    name = TextField()
+    casts = ArrayField()
+
+    class Meta:
+        table = 'movies'
 
 
 class SaveLoadDeleteTestCase(TestCase):
@@ -184,3 +192,20 @@ class NothingTestCase(TestCase):
 
     def tearDown(self):
         pass
+
+
+class ArrayFieldTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        for movie in Movie.fetchall():
+            movie.delete()
+
+    def test_array_field(self):
+        wonder_woman = Movie(name="Wonder Woman", casts=[
+                             "Gal Gadot", "Chris Pine"])
+        wonder_woman.save()
+
+        still_wonder_woman = Movie.fetchone(name="Wonder Woman")
+        assert still_wonder_woman.casts[1] == "Chris Pine"
