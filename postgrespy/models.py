@@ -49,6 +49,7 @@ class Model(object):
 
     @classmethod
     def fetchone(cls, **kwargs):
+        """Syntactic sugar for Select().fetchone()"""
         wheres = [k + '=%s' for k in kwargs.keys()]
         if len(kwargs) > 0:
             where = ' and '.join(wheres)
@@ -65,6 +66,7 @@ class Model(object):
 
     @classmethod
     def fetchall(cls, **kwargs):
+        """Syntactic sugar for Select().fetchall()"""
         wheres = [k + '=%s' for k in kwargs.keys()]
         if len(kwargs) > 0:
             where = ' and '.join(wheres)
@@ -78,6 +80,7 @@ class Model(object):
 
     @classmethod
     def fetchmany(cls, size, **kwargs):
+        """Syntactic sugar for Select().fetchmany()"""
         wheres = [k + '=%s' for k in kwargs.keys()]
         if len(kwargs) > 0:
             where = ' and '.join(wheres)

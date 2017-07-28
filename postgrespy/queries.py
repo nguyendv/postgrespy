@@ -1,4 +1,4 @@
-from postgrespy.fields import BaseField, IntegerField
+from postgrespy.fields import BaseField
 from postgrespy.db import get_conn_cur, close
 from typing import Tuple
 
@@ -57,6 +57,15 @@ class Select(Query):
             ' FROM ' + model_cls.Meta.table
         if where is not None:
             self.stmt = self.stmt + ' WHERE ' + where
+
+    def order_by(self, *expressions):
+        """ add ORDER BY expression to the query
+        Args:
+            *expressions: list of expression in string format
+        example: .order_by("age DESC", "name"): order by age desc
+            if two entries have the same age, name will be used for ordering
+        https://www.postgresql.org/docs/current/static/queries-order.html"""
+        self.stmt += ','.join(expressions)
 
 
 class Join(Query):

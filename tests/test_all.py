@@ -132,6 +132,26 @@ class ModelFetchTestCase(TestCase):
         self.stark.delete()
 
 
+def SelectTestCase(TestCase):
+    def setUp(self):
+        Student(name='Pete', age=22).save()
+        Student(name='John', age=23).save()
+        Student(name='Dan', age=27).save()
+        Student(name='Jeff', age=19).save()
+        Student(name='Vin', age=19).save()
+
+    def test_select_with_order():
+        with Select(Student) as select:
+            select.order_by("age DESC", "name")
+            students = select.fetchall()
+            Vin = students[len(students) - 1]
+            assert Vin.name == 'Vin'
+
+    def tearDown(self):
+        for student in Student.fetchall():
+            student.delete()
+
+
 def JoinTestCase(TestCase):
     def setUp(self):
         self.tom = Student(name='Tom', age=20)
