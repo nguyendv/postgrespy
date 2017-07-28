@@ -39,6 +39,16 @@ class Query:
             ret.append(r)
         return ret
 
+    def fetchmany(self, size):
+        rows = self.cur.fetchmany(size)
+        ret = []
+        for row in rows:
+            r = self.model_cls()
+            for i, f in enumerate(self.fields):
+                setattr(r, f, row[i])
+            ret.append(r)
+        return ret
+
 
 class Select(Query):
     def __init__(self, model_cls, where: str=None):

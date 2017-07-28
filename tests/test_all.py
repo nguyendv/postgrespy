@@ -107,22 +107,29 @@ class JsonBTestCase(TestCase):
         self.tom.delete()
 
 
-class FetchAllTestCase(TestCase):
+class ModelFetchTestCase(TestCase):
     def setUp(self):
         self.phil = Student(name='Phil', age=27)
         self.phil.save()
         self.thor = Student(name='Thor', age=33)
         self.thor.save()
+        self.stark = Student(name='Stark', age=40)
+        self.stark.save()
 
-    def test_get_all(self):
+    def test_fetch_all(self):
         all_adults = Student.fetchall()
         all_thors = Student.fetchall(name='Thor', age=33)
-        assert len(all_adults) == 2
+        assert len(all_adults) == 3
         assert len(all_thors) == 1
+
+    def test_fetch_many(self):
+        many = Student.fetchmany(2)
+        assert len(many) == 2
 
     def tearDown(self):
         self.phil.delete()
         self.thor.delete()
+        self.stark.delete()
 
 
 def JoinTestCase(TestCase):

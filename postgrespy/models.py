@@ -76,6 +76,19 @@ class Model(object):
             select.execute(values)
             return select.fetchall()
 
+    @classmethod
+    def fetchmany(cls, size, **kwargs):
+        wheres = [k + '=%s' for k in kwargs.keys()]
+        if len(kwargs) > 0:
+            where = ' and '.join(wheres)
+            values = tuple(kwargs.values())
+        else:
+            where = None
+            values = None
+        with Select(cls, where) as select:
+            select.execute(values)
+            return select.fetchmany(size)
+
     def delete(self):
         """
         Delete the row from database.
