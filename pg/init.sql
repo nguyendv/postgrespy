@@ -20,3 +20,9 @@ create table movies (
     name text,
     casts text[]
 );
+
+create table entries (
+    id serial primary key,
+    body text,
+    updated timestamp
+);
