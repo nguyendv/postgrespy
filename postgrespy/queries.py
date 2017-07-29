@@ -17,6 +17,15 @@ class Query:
     def __exit__(self, type, value, tb):
         close(self.conn, self.cur)
 
+    def order_by(self, *expressions):
+        """ add ORDER BY expression to the query
+        Args:
+            *expressions: list of expression in string format
+        example: .order_by("age DESC", "name"): order by age desc
+            if two entries have the same age, name will be used for ordering
+        https://www.postgresql.org/docs/current/static/queries-order.html"""
+        self.stmt += ' ORDER BY ' + ','.join(expressions)
+
     def execute(self, values: Tuple = None):
         self.cur.execute(self.stmt, values)
 
@@ -60,15 +69,6 @@ class Select(Query):
             ' FROM ' + model_cls.Meta.table
         if where is not None:
             self.stmt = self.stmt + ' WHERE ' + where
-
-    def order_by(self, *expressions):
-        """ add ORDER BY expression to the query
-        Args:
-            *expressions: list of expression in string format
-        example: .order_by("age DESC", "name"): order by age desc
-            if two entries have the same age, name will be used for ordering
-        https://www.postgresql.org/docs/current/static/queries-order.html"""
-        self.stmt += ','.join(expressions)
 
 
 class Join(Query):
@@ -135,6 +135,33 @@ class Join(Query):
             for i, f in enumerate(self.fields_2):
                 setattr(ret_2, f, row[i + len_0 + len_1])
             return ret_0, ret_1, ret_2
+
+    def fetchmany(self, size):
+        # Set cursor's array size for better performance
+        # See more here: http://initd.org/psycopg/docs/cursor.html#cursor.fetchmany
+        self.cur.arraysize = size
+        rows = self.cur.fetchmany()
+        ret = []
+        for row in rows:
+            r_0 = self.model_cls_0()
+            r_1 = self.model_cls_1()
+
+            for i, f in enumerate(self.fields_0):
+                setattr(r_0, f, row[i])
+
+            len_0 = len(self.fields_0)
+            for i, f in enumerate(self.fields_1):
+                setattr(r_1, f, row[i + len_0])
+
+            if self.model_cls_2 is None:
+                ret.append((r_0, r_1))
+            else:
+                r_2 = self.model_cls_2()
+                len_1 = len(self.fields_1)
+                for i, f in enumerate(self.fields_2):
+                    setattr(r_2, f, row[i + len_0 + len_1])
+                ret.append((r_0, r_1, r_2))
+        return ret
 
     def fetchall(self):
         rows = self.cur.fetchall()
