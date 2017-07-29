@@ -40,7 +40,10 @@ class Query:
         return ret
 
     def fetchmany(self, size):
-        rows = self.cur.fetchmany(size)
+        # Set cursor's array size for better performance
+        # See more here: http://initd.org/psycopg/docs/cursor.html#cursor.fetchmany
+        self.cur.arraysize = size
+        rows = self.cur.fetchmany()
         ret = []
         for row in rows:
             r = self.model_cls()
