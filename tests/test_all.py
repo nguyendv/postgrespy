@@ -1,5 +1,5 @@
 from postgrespy.models import Model
-from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField, ArrayField
+from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField
 from postgrespy.queries import Select, Join
 from unittest import TestCase
 
@@ -32,13 +32,12 @@ class Car(Model):
 
 class SaveLoadDeleteTestCase(TestCase):
     def setUp(self):
-        self.peter = Student(name='Peter', age=15)
-        self.peter.save()
+        self.peter = Student.insert(name='Peter', age=15)
         self.still_peter = Student.fetchone(id=self.peter.id)
+
         self.no_one = Student.fetchone(id=999, name='hehe')
 
-        self.another_peter = Student(name='Peter', age=17)
-        self.another_peter.save()
+        self.another_peter = Student.insert(name='Peter', age=17)
 
     def test_save_load_delete(self):
 
@@ -59,15 +58,13 @@ class SaveLoadDeleteTestCase(TestCase):
         assert self.no_one is None
 
     def tearDown(self):
-        self.peter.delete()
-        self.still_peter.delete()
-        self.another_peter.delete()
+        for student in Student.fetchall():
+            student.delete()
 
 
 class BooleanTestCase(TestCase):
     def setUp(self):
-        self.transgender = Student(name='HG', age=27, is_male=True)
-        self.transgender.save()
+        self.transgender = Student.insert(name='HG', age=27, is_male=True)
 
     def test_boolean_field(self):
 
@@ -82,18 +79,17 @@ class BooleanTestCase(TestCase):
         still_trangender.delete()
 
     def tearDown(self):
-        self.transgender.delete()
+        for student in Student.fetchall():
+            student.delete()
 
 
 class JsonBTestCase(TestCase):
     def setUp(self):
-        self.tom = Student(name='Tom')
-        self.tom.save()
-        self.meth = Product(name='meth', owner_id=self.tom.id, detail={
+        self.tom = Student.insert(name='Tom')
+        self.meth = Product.insert(name='meth', owner_id=self.tom.id, detail={
             'color': 'red',
             'weight': 5
         })
-        self.meth.save()
 
     def test_jsonb_field(self):
         assert(self.meth.detail['color'] == 'red')
@@ -104,17 +100,15 @@ class JsonBTestCase(TestCase):
         assert(meth2.detail['price'] == 5)
 
     def tearDown(self):
-        self.tom.delete()
+        for student in Student.fetchall():
+            student.delete()
 
 
 class ModelFetchTestCase(TestCase):
     def setUp(self):
-        self.phil = Student(name='Phil', age=27)
-        self.phil.save()
-        self.thor = Student(name='Thor', age=33)
-        self.thor.save()
-        self.stark = Student(name='Stark', age=40)
-        self.stark.save()
+        self.phil = Student.insert(name='Phil', age=27)
+        self.thor = Student.insert(name='Thor', age=33)
+        self.stark = Student.insert(name='Stark', age=40)
 
     def test_fetch_all(self):
         all_adults = Student.fetchall()
@@ -127,18 +121,17 @@ class ModelFetchTestCase(TestCase):
         assert len(many) == 2
 
     def tearDown(self):
-        self.phil.delete()
-        self.thor.delete()
-        self.stark.delete()
+        for student in Student.fetchall():
+            student.delete()
 
 
 def SelectTestCase(TestCase):
     def setUp(self):
-        Student(name='Pete', age=22).save()
-        Student(name='John', age=23).save()
-        Student(name='Dan', age=27).save()
-        Student(name='Jeff', age=19).save()
-        Student(name='Vin', age=19).save()
+        Student.insert(name='Pete', age=22)
+        Student.insert(name='John', age=23)
+        Student.insert(name='Dan', age=27)
+        Student.insert(name='Jeff', age=19)
+        Student.insert(name='Vin', age=19)
 
     def test_select_with_order():
         with Select(Student) as select:
@@ -154,25 +147,19 @@ def SelectTestCase(TestCase):
 
 def JoinTestCase(TestCase):
     def setUp(self):
-        self.tom = Student(name='Tom', age=20)
-        self.jerry = Student(name='Jerry', age=20)
-        self.bob = Student(name='Bob', age=20)
-        self.tom.save()
-        self.jerry.save()
-        self.bob.save()
+        self.tom = Student.insert(name='Tom', age=20)
+        self.jerry = Student.insert(name='Jerry', age=20)
+        self.bob = Student.insert(name='Bob', age=20)
 
-        self.weed = Product(name='weed', owner_id=self.tom.id, detail={})
-        self.smoke = Product(name='smoke', owner_id=self.tom.id, detail={})
-        self.book = Product(name='book', owner_id=self.jerry.id, detail={})
+        self.weed = Product.insert(
+            name='weed', owner_id=self.tom.id, detail={})
+        self.smoke = Product.insert(
+            name='smoke', owner_id=self.tom.id, detail={})
+        self.book = Product.insert(
+            name='book', owner_id=self.jerry.id, detail={})
 
-        self.weed.save()
-        self.smoke.save()
-        self.book.save()
-
-        self.toyota = Car(name='Toyota', owner_id=self.tom.id)
-        self.nissan = Car(name='Nissan', owner_id=self.tom.id)
-        self.toyota.save()
-        self.nissan.save()
+        self.toyota = Car.insert(name='Toyota', owner_id=self.tom.id)
+        self.nissan = Car.insert(name='Nissan', owner_id=self.tom.id)
 
     def test_joins(self):
 

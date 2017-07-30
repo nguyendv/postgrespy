@@ -6,6 +6,8 @@ from jinja2 import Template
 from psycopg2 import DatabaseError
 import json
 
+import warnings
+
 
 class Model(object):
     """
@@ -19,10 +21,10 @@ class Model(object):
         for k in kwargs.keys():
             setattr(self, k, kwargs[k])
 
-        self.fields = []
+        self.fields = set()
         for k in dir(self):
             if issubclass(type(getattr(self, k)), BaseField):
-                self.fields.append(k)
+                self.fields.add(k)
 
     def __setattr__(self, name, value):
         if name in dir(self):
@@ -35,8 +37,7 @@ class Model(object):
             super().__setattr__(name, value)
 
     def save(self):
-        """
-        Insert if id is None.
+        """Insert if id is None.
         Update if otherwise
         IMPORTANT: this is a 'dumb' method. You need to check for
         any constraint or handle exception before/after calling me.
@@ -46,6 +47,45 @@ class Model(object):
             self._insert()
         else:
             self._update()
+
+    @classmethod
+    def insert(cls, **kwargs):
+        """ Execute the INSERT query"""
+        conn, cur = get_conn_cur()
+
+        template = Template('INSERT INTO {{table}}\n'
+                            '( {{columns}} )\n'
+                            'VALUES ( {{placeholders}} )\n'
+                            'RETURNING id')
+
+        stmt = template.render(table=cls.Meta.table,
+                               columns=','.join(kwargs.keys()),
+                               placeholders=','.join('%s'
+                                                     for k in kwargs.keys())
+                               )
+        ret = None
+
+        try:
+            values = tuple(json.dumps(val) if (type(val) is dict)
+                           else val for val in kwargs.values())
+            cur.execute(stmt, values)
+            id = cur.fetchone()[0]
+            conn.commit()
+            ret = cls(id, **kwargs)
+        except DatabaseError as e:
+            conn.rollback()
+            if e.pgcode == '23505':
+                """
+                23505: PostgreSQL error code: unique violation
+                https://www.postgresql.org/docs/9.6/static/errcodes-appendix.html
+                """
+                raise UniqueViolatedError()
+            else:
+                raise NotImplementedError(
+                    'Unhandled error. Need to check.')
+
+        close(conn, cur)
+        return ret
 
     @classmethod
     def fetchone(cls, **kwargs):
@@ -106,15 +146,17 @@ class Model(object):
 
     def _insert(self):
         """ Execute the INSERT query"""
+        warnings.warn(
+            "DEPRECATED. Use ::insert() instead", DeprecationWarning)
         conn, cur = get_conn_cur()
 
         template = Template('INSERT INTO {{table}}\n'
-                            '( {{fields}} )\n'
+                            '( {{columns}} )\n'
                             'VALUES ( {{placeholders}} )\n'
                             'RETURNING id')
 
         stmt = template.render(table=self.Meta.table,
-                               fields=','.join(self.fields),
+                               columns=','.join(self.fields),
                                placeholders=','.join('%s'
                                                      for f in self.fields)
                                )
@@ -142,7 +184,7 @@ class Model(object):
         close(conn, cur)
 
     def _update(self):
-        """ Execute the UPDATE query"""
+        """Execute the UPDATE query"""
         conn, cur = get_conn_cur()
 
         template = Template('UPDATE {{table}}\n'

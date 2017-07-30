@@ -32,9 +32,8 @@ class ArrayFieldTestCase(TestCase):
             movie.delete()
 
     def test_array_field(self):
-        wonder_woman = Movie(name="Wonder Woman", casts=[
-                             "Gal Gadot", "Chris Pine"])
-        wonder_woman.save()
+        wonder_woman = Movie.insert(name="Wonder Woman", casts=[
+            "Gal Gadot", "Chris Pine"])
 
         still_wonder_woman = Movie.fetchone(name="Wonder Woman")
         assert still_wonder_woman.casts[1] == "Chris Pine"
@@ -50,8 +49,7 @@ class DateTimeFieldTestCase(TestCase):
 
     def test_date_time_field(self):
         now = datetime.now()
-        abc = Entry(body="ABC", updated=now)
-        abc.save()
+        abc = Entry.insert(body="ABC", updated=now)
 
         still_abc = Entry.fetchone(id=abc.id)
         updated = still_abc.updated.value
