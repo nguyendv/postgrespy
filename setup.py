@@ -3,12 +3,12 @@ from setuptools import setup
 setup(
     name='postgrespy',
     packages=['postgrespy'],
-    version='0.2.0',
+    version='0.2.1',
     description='A simple postgres orm',
     author='Dung (DV) Nguyen',
     author_email='dv@dvnguyen.com',
     url='https://github.com/nguyendv/postgrespy',
-    download_url='https://github.com/nguyendv/postgrespy/archive/0.2.0.tar.gz',
+    download_url='https://github.com/nguyendv/postgrespy/archive/0.2.1.tar.gz',
     install_requires=[
         'psycopg2>=2.7',
         'Jinja2>=2.9'
