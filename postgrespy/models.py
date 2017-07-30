@@ -7,6 +7,8 @@ from psycopg2 import DatabaseError
 import json
 
 import warnings
+# Always show DeprecationWarning
+warnings.simplefilter('always', DeprecationWarning)
 
 
 class Model(object):
