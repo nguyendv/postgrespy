@@ -7,9 +7,6 @@ from psycopg2 import DatabaseError
 import json
 
 import warnings
-# Always show DeprecationWarning
-warnings.simplefilter('always', DeprecationWarning)
-
 
 class Model(object):
     """
@@ -145,11 +142,10 @@ class Model(object):
         cur.execute(stmt, (self.id,))
         conn.commit()
         close(conn, cur)
-
+    
+    # DEPRECATED, use ::insert() instead
     def _insert(self):
         """ Execute the INSERT query"""
-        warnings.warn(
-            "DEPRECATED. Use ::insert() instead", DeprecationWarning)
         conn, cur = get_conn_cur()
 
         template = Template('INSERT INTO {{table}}\n'
