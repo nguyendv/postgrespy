@@ -5,8 +5,9 @@ from postgrespy.queries import Select
 from jinja2 import Template
 from psycopg2 import DatabaseError
 import json
-
 import warnings
+
+
 
 class Model(object):
     """
@@ -57,16 +58,25 @@ class Model(object):
                             'VALUES ( {{placeholders}} )\n'
                             'RETURNING id')
 
+        """Prepare placeholders"""
+        s_arr = []
+        for k,v in kwargs.items():
+            if type(v) is list and type(v[0]) is dict:
+                # https://github.com/psycopg/psycopg2/issues/585
+                #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
+                s_arr.append('%s::jsonb[]')
+            else: 
+                s_arr.append('%s')
+        placeholders = ','.join(s_arr)
+        
         stmt = template.render(table=cls.Meta.table,
                                columns=','.join(kwargs.keys()),
-                               placeholders=','.join('%s'
-                                                     for k in kwargs.keys())
+                               placeholders=placeholders
                                )
         ret = None
 
         try:
-            values = tuple(json.dumps(val) if (type(val) is dict)
-                           else val for val in kwargs.values())
+            values = tuple(val for val in kwargs.values())
             cur.execute(stmt, values)
             id = cur.fetchone()[0]
             conn.commit()
@@ -146,6 +156,7 @@ class Model(object):
     # DEPRECATED, use ::insert() instead
     def _insert(self):
         """ Execute the INSERT query"""
+        warnings.warn("DEPRECATED, use ::insert() instead", DeprecationWarning)
         conn, cur = get_conn_cur()
 
         template = Template('INSERT INTO {{table}}\n'

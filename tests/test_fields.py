@@ -6,10 +6,13 @@ from datetime import datetime
 from postgrespy.fields import TextField, ArrayField, DateTimeField
 from postgrespy.models import Model
 
+import psycopg2.extras
+from psycopg2.extras import Json
 
 class Movie(Model):
     name = TextField()
     casts = ArrayField()
+    earning = ArrayField()
 
     class Meta:
         table = 'movies'
@@ -37,6 +40,25 @@ class ArrayFieldTestCase(TestCase):
 
         still_wonder_woman = Movie.fetchone(name="Wonder Woman")
         assert still_wonder_woman.casts[1] == "Chris Pine"
+
+
+class ArrayOfJsonTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        for movie in Movie.fetchall():
+            movie.delete()
+
+    def test_array_of_json_field(self):
+        pass
+        wonder_woman = Movie.insert(name="Wonder Woman", casts=[
+            "Gal Gadot", "Chris Pine"], 
+            earning=[{"country": "USA", "amount": 1000}]
+            )
+
+        still_wonder_woman = Movie.fetchone(name="Wonder Woman")
+        assert still_wonder_woman.earning[0]['country'] == 'USA'
 
 
 class DateTimeFieldTestCase(TestCase):

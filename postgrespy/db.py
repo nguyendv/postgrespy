@@ -14,6 +14,12 @@ in environment file then source it. Otherwise, you need to supply then in `get_p
 import os
 from psycopg2.pool import ThreadedConnectionPool
 
+import psycopg2
+import psycopg2.extras
+
+"""Register dict as Json"""
+psycopg2.extensions.register_adapter(dict, psycopg2.extras.Json)
+
 
 _pool = None
 

@@ -18,7 +18,8 @@ create table cars (
 create table movies (
     id serial primary key,
     name text,
-    casts text[]
+    casts text[],
+    earning JSONB[]-- earning = [{country, amount}]
 );
 
 create table entries (
