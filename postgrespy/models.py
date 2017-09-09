@@ -194,6 +194,7 @@ class Model(object):
 
     def _update(self):
         """Execute the UPDATE query"""
+        """TODO: replace ::save() by this function"""
         conn, cur = get_conn_cur()
 
         template = Template('UPDATE {{table}}\n'
@@ -207,10 +208,7 @@ class Model(object):
             if getattr(self, f) is None:
                 values.append(None)
             else:
-                if type(getattr(self, f)) == JsonBField:
-                    values.append(json.dumps(getattr(self, f).value))
-                else:
-                    values.append(getattr(self, f).value)
+                values.append(getattr(self, f).value)
         cur.execute(stmt, values + [self.id])
 
         conn.commit()
