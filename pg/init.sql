@@ -19,7 +19,8 @@ create table movies (
     id serial primary key,
     name text,
     casts text[],
-    earning JSONB[]-- earning = [{country, amount}]
+    earning JSONB[], -- earning = [{country, amount}]
+    trivia JSONB[]
 );
 
 create table entries (

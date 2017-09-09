@@ -11,6 +11,7 @@ from psycopg2.extras import Json
 
 class Movie(Model):
     name = TextField()
+    trivia = ArrayField()
     casts = ArrayField()
     earning = ArrayField()
 
@@ -51,14 +52,40 @@ class ArrayOfJsonTestCase(TestCase):
             movie.delete()
 
     def test_array_of_json_field(self):
-        pass
         wonder_woman = Movie.insert(name="Wonder Woman", casts=[
             "Gal Gadot", "Chris Pine"], 
-            earning=[{"country": "USA", "amount": 1000}]
-            )
+            earning=[{"country": "USA", "amount": 1000}],
+            trivia=[
+                {
+                'gid': 'a31e4ed0-950f-11e7-a6d6-51c771a79848', 
+                'ip': '192.168.1.100', 
+                'name': 'Network0_Instance1', 
+                'network': {
+                    'cidr': '192.168.1.0/24', 
+                    'gid': '9ecb9680-950f-11e7-a6d6-51c771a79848', 
+                    'name': 'Network0', 
+                    'type': 'NetworkNode', 
+                    'x': 444.515625, 
+                    'y': 38
+                    }, 
+                'target': {
+                    'gid': 'a0b935b0-950f-11e7-a6d6-51c771a79848', 
+                    'image': 'Ubuntu-Server-16.04-x64', 
+                    'links': [], 
+                    'name': 'Instance1', 
+                    'status': None, 
+                    'type': 'Instance', 
+                    'x': 527.515625, 
+                    'y': 362
+                    }, 
+                'type': 'NetworkLink'
+                }
+            ]
+        )
 
-        still_wonder_woman = Movie.fetchone(name="Wonder Woman")
+        still_wonder_woman = Movie.fetchall(name="Wonder Woman")[0]
         assert still_wonder_woman.earning[0]['country'] == 'USA'
+        assert still_wonder_woman.trivia[0]['ip'] == '192.168.1.100'
 
 
 class DateTimeFieldTestCase(TestCase):
