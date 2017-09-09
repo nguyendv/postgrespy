@@ -40,6 +40,7 @@ class ArrayFieldTestCase(TestCase):
             "Gal Gadot", "Chris Pine"])
 
         still_wonder_woman = Movie.fetchone(name="Wonder Woman")
+        assert len(still_wonder_woman.casts) == 2
         assert still_wonder_woman.casts[1] == "Chris Pine"
 
 
@@ -84,7 +85,10 @@ class ArrayOfJsonTestCase(TestCase):
         )
 
         still_wonder_woman = Movie.fetchall(name="Wonder Woman")[0]
+        assert len(still_wonder_woman.earning) == 1
         assert still_wonder_woman.earning[0]['country'] == 'USA'
+
+        assert len(still_wonder_woman.trivia) == 1
         assert still_wonder_woman.trivia[0]['ip'] == '192.168.1.100'
 
 

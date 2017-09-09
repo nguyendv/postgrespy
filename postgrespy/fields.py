@@ -49,8 +49,9 @@ class ArrayField(BaseField, list):
     def __init__(self, value: list = None):
         super().__init__()
         self.value = value
-        if value is not None:
-            self.__len__ = len(value)
+
+    def __len__(self):
+        return len(self.value)
 
     def __getitem__(self, index):
         return self.value[index]
