@@ -91,6 +91,11 @@ class ArrayOfJsonTestCase(TestCase):
         assert len(still_wonder_woman.trivia) == 1
         assert still_wonder_woman.trivia[0]['ip'] == '192.168.1.100'
 
+        trivias = []
+        for t in still_wonder_woman.trivia:
+            trivias.append(t)
+        assert len(trivias) == 1
+
 
 class DateTimeFieldTestCase(TestCase):
     def setUp(self):

@@ -49,12 +49,23 @@ class ArrayField(BaseField, list):
     def __init__(self, value: list = None):
         super().__init__()
         self.value = value
+        self._index = 0
 
     def __len__(self):
         return len(self.value)
 
     def __getitem__(self, index):
         return self.value[index]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._index >= len(self.value):
+            raise StopIteration
+        else:
+            self._index += 1
+            return self.value[self._index - 1]
 
 
 class DateTimeField(BaseField):
