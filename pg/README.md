@@ -8,7 +8,3 @@ How to manually run this container?
 
 How to upload to pypi?
 `bash pypi-upload.sh`
-
-# Release notes
-## Version 0.2.2
-- Add support for JSONB[] type

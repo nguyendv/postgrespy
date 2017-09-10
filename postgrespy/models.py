@@ -43,6 +43,7 @@ class Model(object):
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
+        warnings.warn("DEPRECATED from September 2017. Use update(self, **kwargs) instead", DeprecationWarning)
         if self.id is None:
             self._insert()
         else:
@@ -50,7 +51,10 @@ class Model(object):
 
     @classmethod
     def insert(cls, **kwargs):
-        """ Execute the INSERT query"""
+        """ Execute the INSERT query
+        :param: kwargs: list of key=value, where
+                key is one field of the table,
+                value must be a Python builtin type, not my custom types defined in fields.py: int, string, datetime, dict, etc."""
         conn, cur = get_conn_cur()
 
         template = Template('INSERT INTO {{table}}\n'
@@ -98,7 +102,10 @@ class Model(object):
         return ret
 
     def update(self, **kwargs):
-        """Execute the update query"""
+        """Execute the update query
+        :param: kwargs: list of key=value, where
+                key is one field of the table,
+                value must be a Python builtin type, not my custom types defined in fields.py: int, string, datetime, dict, etc."""
         conn, cur = get_conn_cur()
 
         template = Template('UPDATE {{table}} '

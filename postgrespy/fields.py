@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import psycopg2
+import psycopg2.extras
 
 class BaseField:
     def __init__(self):
@@ -74,3 +76,10 @@ class DateTimeField(BaseField):
     def __init__(self, value: datetime = None):
         super().__init__()
         self.value = value
+
+
+"""Adapt Python dict as Postgres Json"""
+psycopg2.extensions.register_adapter(dict, psycopg2.extras.Json)
+
+
+

@@ -93,9 +93,8 @@ class JsonBTestCase(TestCase):
     def test_jsonb_field(self):
         assert(self.meth.detail['color'] == 'red')
         new_detail = self.meth.detail
-        print(new_detail)
         new_detail['price'] = 5
-        self.meth.update(detail=new_detail)
+        self.meth.update(detail=new_detail.value)
 
         meth2 = Product.fetchone(id=self.meth.id)
         assert(meth2.detail['price'] == 5)
