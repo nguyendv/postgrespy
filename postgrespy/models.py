@@ -59,16 +59,17 @@ class Model(object):
                             'RETURNING id')
 
         """Prepare placeholders"""
-        s_arr = []
+        temp_arr = []
         for k,v in kwargs.items():
             if type(v) is list and type(v[0]) is dict:
                 # https://github.com/psycopg/psycopg2/issues/585
                 #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
-                s_arr.append('%s::jsonb[]')
+                temp_arr.append('%s::jsonb[]')
             else: 
-                s_arr.append('%s')
-        placeholders = ','.join(s_arr)
+                temp_arr.append('%s')
+        placeholders = ','.join(temp_arr)
         
+        """Render and execute the statement"""
         stmt = template.render(table=cls.Meta.table,
                                columns=','.join(kwargs.keys()),
                                placeholders=placeholders
@@ -95,6 +96,58 @@ class Model(object):
 
         close(conn, cur)
         return ret
+
+    def update(self, **kwargs):
+        """Execute the update query"""
+        conn, cur = get_conn_cur()
+
+        template = Template('UPDATE {{table}} '
+                            'SET {{ field_value_pairs }} '
+                            'WHERE id = %s')
+
+        """Prepare the field value pairs"""
+        temp_arr = []
+        for k,v in kwargs.items():
+            if type(v) is list and type(v[0]) is dict:
+                # https://github.com/psycopg/psycopg2/issues/585
+                #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
+                temp_arr.append(k + ' = %s::jsonb[]')
+            else: 
+                temp_arr.append(k + ' = %s')
+        field_value_pairs = ','.join(temp_arr)
+
+        """Render and execute the statement"""
+        stmt = template.render(table=self.Meta.table, field_value_pairs=field_value_pairs)
+        cur.execute(stmt, list(kwargs.values()) + [self.id])
+
+        conn.commit()
+        close(conn, cur)
+
+        for k,v in kwargs.items():
+            setattr(self, k, v)
+
+    # DEPRECATED, use update(cls, **kwargs) instead
+    def _update(self):
+        """Execute the UPDATE query"""
+        warnings.warn("_update(self) deprecated from 09/2017, use update(self, **kwargs) instead", DeprecationWarning)
+        conn, cur = get_conn_cur()
+
+        template = Template('UPDATE {{table}}\n'
+                            'SET {{ field_value_pairs }} \n'
+                            'WHERE id = %s')
+        stmt = template.render(table=self.Meta.table,
+                               field_value_pairs=','.join(
+                                   f + '=%s' for f in self.fields))
+        values = []
+        for f in self.fields:
+            if getattr(self, f) is None:
+                values.append(None)
+            else:
+                values.append(getattr(self, f).value)
+        cur.execute(stmt, values + [self.id])
+
+        conn.commit()
+        close(conn, cur)
 
     @classmethod
     def fetchone(cls, **kwargs):
@@ -192,24 +245,4 @@ class Model(object):
                     'Unhandled error. Need to check.')
         close(conn, cur)
 
-    def _update(self):
-        """Execute the UPDATE query"""
-        """TODO: replace ::save() by this function"""
-        conn, cur = get_conn_cur()
 
-        template = Template('UPDATE {{table}}\n'
-                            'SET {{ field_value_pairs }} \n'
-                            'WHERE id = %s')
-        stmt = template.render(table=self.Meta.table,
-                               field_value_pairs=','.join(
-                                   f + '=%s' for f in self.fields))
-        values = []
-        for f in self.fields:
-            if getattr(self, f) is None:
-                values.append(None)
-            else:
-                values.append(getattr(self, f).value)
-        cur.execute(stmt, values + [self.id])
-
-        conn.commit()
-        close(conn, cur)

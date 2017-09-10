@@ -84,6 +84,7 @@ class ArrayOfJsonTestCase(TestCase):
             ]
         )
 
+        # Test len()
         still_wonder_woman = Movie.fetchall(name="Wonder Woman")[0]
         assert len(still_wonder_woman.earning) == 1
         assert still_wonder_woman.earning[0]['country'] == 'USA'
@@ -91,10 +92,20 @@ class ArrayOfJsonTestCase(TestCase):
         assert len(still_wonder_woman.trivia) == 1
         assert still_wonder_woman.trivia[0]['ip'] == '192.168.1.100'
 
+        # Test iteration
         trivias = []
         for t in still_wonder_woman.trivia:
             trivias.append(t)
         assert len(trivias) == 1
+
+        # Test save
+        new_earning=[{"country": "USA", "amount": 100}]
+        still_wonder_woman.update(earning=new_earning)
+
+        still_wonder_woman = Movie.fetchall(name="Wonder Woman")[0]
+        assert len(still_wonder_woman.earning) == 1
+        assert still_wonder_woman.earning[0]['amount'] == 100 
+
 
 
 class DateTimeFieldTestCase(TestCase):

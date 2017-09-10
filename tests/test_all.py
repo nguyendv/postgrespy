@@ -45,8 +45,8 @@ class SaveLoadDeleteTestCase(TestCase):
         assert self.peter.age == 15
 
         assert(type(self.still_peter.age) == IntegerField)
-        self.still_peter.age = 16
-        self.still_peter.save()
+        self.still_peter.update(age=16)
+
         assert self.still_peter.name == 'Peter'
         assert self.still_peter.age == 16
 
@@ -70,8 +70,7 @@ class BooleanTestCase(TestCase):
 
         assert self.transgender.is_male == True
 
-        self.transgender.is_male = False
-        self.transgender.save()
+        self.transgender.update(is_male = False)
 
         still_trangender = Student.fetchone(id=self.transgender.id)
         assert still_trangender.is_male == False
@@ -93,8 +92,10 @@ class JsonBTestCase(TestCase):
 
     def test_jsonb_field(self):
         assert(self.meth.detail['color'] == 'red')
-        self.meth.detail['price'] = 5
-        self.meth.save()
+        new_detail = self.meth.detail
+        print(new_detail)
+        new_detail['price'] = 5
+        self.meth.update(detail=new_detail)
 
         meth2 = Product.fetchone(id=self.meth.id)
         assert(meth2.detail['price'] == 5)
