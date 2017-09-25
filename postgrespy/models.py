@@ -65,7 +65,9 @@ class Model(object):
         """Prepare placeholders"""
         temp_arr = []
         for k,v in kwargs.items():
-            if type(v) is list and type(v[0]) is dict:
+            # check if value is list of dict
+            # if so, treat it as an array of json
+            if type(v) is list and len(v) > 0 and type(v[0]) is dict:
                 # https://github.com/psycopg/psycopg2/issues/585
                 #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
                 temp_arr.append('%s::jsonb[]')
@@ -115,7 +117,9 @@ class Model(object):
         """Prepare the field value pairs"""
         temp_arr = []
         for k,v in kwargs.items():
-            if type(v) is list and type(v[0]) is dict:
+            # check if value is list of dict
+            # if so, treat it as an array of json
+            if type(v) is list and len(v) > 0 and type(v[0]) is dict:
                 # https://github.com/psycopg/psycopg2/issues/585
                 #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
                 temp_arr.append(k + ' = %s::jsonb[]')
