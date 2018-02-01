@@ -5,9 +5,9 @@ setup(
     name='postgrespy',
     packages=['postgrespy'],
     version=os.environ['POSTGRESPY_VERSION'],
-    description='A simple postgres orm',
-    author='Dung (Dave) Nguyen',
-    author_email='dvnguyen.vn@gmail.com',
+    description='A simple postgres ORM',
+    author='Dave Nguyen',
+    author_email='dv@dvnguyen.com',
     url='https://github.com/nguyendv/postgrespy',
     download_url='https://github.com/nguyendv/postgrespy/archive/' + os.environ['POSTGRESPY_VERSION'] +'.tar.gz',
     install_requires=[
