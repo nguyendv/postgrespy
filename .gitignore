@@ -11,3 +11,4 @@ todo.txt
 dist/
 postgrespy.egg-info/
 build/
+.pytest_cache
