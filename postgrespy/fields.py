@@ -9,34 +9,34 @@ class BaseField:
 
 
 class TextField(BaseField, str):
-    def __init__(self, value: str = None):
+    def __init__(self, value: str = None) -> None:
         super().__init__()
         self.value = value
 
 
 class EnumField(BaseField, str):
-    def __init__(self, value: str = None):
+    def __init__(self, value: str = None) -> None:
         super().__init__()
         self.value = value
 
 
 class IntegerField(BaseField, int):
-    def __init__(self, value: int = None):
+    def __init__(self, value: int = None) -> None:
         super().__init__()
         self.value = value
 
 
 class BooleanField(BaseField):
-    def __init__(self, value: bool= None):
+    def __init__(self, value: bool= None) -> None:
         super().__init__()
         self.value = value
 
-    def __eq__(self, val: bool):
+    def __eq__(self, val: object):
         return self.value is val
 
 
 class JsonBField(BaseField, dict):
-    def __init__(self, value: object = None):
+    def __init__(self, value: object = None) -> None:
         super().__init__()
         self.value = value
 
@@ -48,7 +48,7 @@ class JsonBField(BaseField, dict):
 
 
 class ArrayField(BaseField, list):
-    def __init__(self, value: list = None):
+    def __init__(self, value: list = None) -> None:
         super().__init__()
         self.value = value
         self._index = 0
@@ -73,7 +73,7 @@ class ArrayField(BaseField, list):
 class DateTimeField(BaseField):
     """ Translate the datetime.datetime class into timestamp field without timezone in postgresql."""
 
-    def __init__(self, value: datetime = None):
+    def __init__(self, value: datetime = None) -> None:
         super().__init__()
         self.value = value
 
