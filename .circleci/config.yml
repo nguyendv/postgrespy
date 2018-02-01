@@ -9,7 +9,6 @@ jobs:
             - run: sudo pip install pipenv
             - run:
                 command: |
-                    cd api
                     pipenv --python 3.6
                     pipenv install -d
             - run: 
