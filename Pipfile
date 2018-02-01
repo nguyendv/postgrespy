@@ -19,6 +19,7 @@ jedi = "~=0.11.0"
 pytest = "~=3.2.2"
 wheel = "~=0.30.0"
 mypy = "~=0.560"
+neovim = "~=0.2.0"
 
 
 [requires]

@@ -1,0 +1,36 @@
+version: 2
+jobs:
+    unittest:
+        docker:
+            - image: circleci/python:3.6
+
+        steps:
+            - checkout
+            - run: sudo pip install pipenv
+            - run:
+                command: |
+                    pipenv --python 3.6
+                    pipenv install -d
+            - run: 
+                command: |
+                    pipenv run mypy --ignore-missing-imports postgrespy
+                    pipenv run mypy --ignore-missing-imports tests
+
+    e2etest:
+        - image: circleci/python:3.6
+
+        steps:
+            - checkout
+            - run: sudo pip install pipenv
+            - run:
+                command: |
+                    pipenv --python 3.6
+                    pipenv install -d
+
+workflows:
+    version: 2
+    test:
+        jobs:
+            - unittest
+            - e2etest
+

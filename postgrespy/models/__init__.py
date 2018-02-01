@@ -1,3 +1,4 @@
+from typing import Set, Dict, List, Tuple
 from postgrespy.db import get_conn_cur, close
 from postgrespy import UniqueViolatedError
 from postgrespy.fields import BaseField, JsonBField, IntegerField
@@ -26,6 +27,7 @@ class Model(object):
             if issubclass(type(getattr(self, k)), BaseField):
                 self.fields.add(k)
 
+
     def __setattr__(self, name, value):
         if name in dir(self):
             if value is not None:
@@ -35,6 +37,7 @@ class Model(object):
                 super().__setattr__(name, field_cls(value))
         else:
             super().__setattr__(name, value)
+
 
     def save(self):
         """Insert if id is None.
@@ -48,6 +51,30 @@ class Model(object):
             self._insert()
         else:
             self._update()
+
+
+    @classmethod
+    def tablename(cls) -> str:
+        return cls.Meta.table
+
+    @classmethod
+    def schema_presentation(cls) -> Dict:
+        """Return a dictionary presentaion of table schema"""
+        return {
+            "tablename": cls.tablename(),
+            "columns": cls._get_columns()
+        }
+
+    @classmethod
+    def _get_columns(cls) -> List[Tuple[str,str]]:
+        """Get a list of postgresql columns from model definition"""
+        columns_list : List[Tuple[str,str]] = []
+        for key in dir(cls):
+            field = getattr(cls, key)
+            if (issubclass( type(field), BaseField)):
+                columns_list.append((key, field._get_type()))
+        return columns_list
+
 
     @classmethod
     def insert(cls, **kwargs):

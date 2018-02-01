@@ -13,17 +13,26 @@ class TextField(BaseField, str):
         super().__init__()
         self.value = value
 
+    def _get_type(self):
+        return 'text'
+
 
 class EnumField(BaseField, str):
     def __init__(self, value: str = None) -> None:
         super().__init__()
         self.value = value
 
+    def _get_type(self):
+        return 'enum'
+
 
 class IntegerField(BaseField, int):
     def __init__(self, value: int = None) -> None:
         super().__init__()
         self.value = value
+
+    def _get_type(self):
+        return 'integer'
 
 
 class BooleanField(BaseField):
@@ -34,6 +43,8 @@ class BooleanField(BaseField):
     def __eq__(self, val: object):
         return self.value is val
 
+    def _get_type(self):
+        return 'boolean'
 
 class JsonBField(BaseField, dict):
     def __init__(self, value: object = None) -> None:
@@ -46,6 +57,8 @@ class JsonBField(BaseField, dict):
     def __setitem__(self, key, val):
         self.value[key] = val
 
+    def _get_type(self):
+        return 'jsonb'
 
 class ArrayField(BaseField, list):
     def __init__(self, value: list = None) -> None:
@@ -69,6 +82,8 @@ class ArrayField(BaseField, list):
             self._index += 1
             return self.value[self._index - 1]
 
+    def _get_type(self):
+        return 'array'
 
 class DateTimeField(BaseField):
     """ Translate the datetime.datetime class into timestamp field without timezone in postgresql."""
@@ -77,6 +92,9 @@ class DateTimeField(BaseField):
         super().__init__()
         self.value = value
 
+    def _get_type(self):
+        return 'datetime'
+    
 
 """Adapt Python dict as Postgres Json"""
 psycopg2.extensions.register_adapter(dict, psycopg2.extras.Json)
