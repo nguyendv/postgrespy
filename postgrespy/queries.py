@@ -10,6 +10,7 @@ class Query:
         self.fields = [f for f in dir(model_cls) if not f.startswith(
             '__') and issubclass(type(getattr(model_cls, f)), BaseField)]
         self.fields = self.fields + ['id']  # Add id to the list of fields
+        self.stmt = ''
 
     def __enter__(self):
         return self
@@ -63,7 +64,7 @@ class Query:
 
 
 class Select(Query):
-    def __init__(self, model_cls, where: str=None):
+    def __init__(self, model_cls, where: str=None) -> None:
         super().__init__(model_cls)
         self.stmt = 'SELECT ' + ','.join(self.fields) + \
             ' FROM ' + model_cls.Meta.table
@@ -72,7 +73,7 @@ class Select(Query):
 
 
 class Join(Query):
-    def __init__(self, model_cls_0, join_type_0: str, model_cls_1, on_clause_0: str, join_type_1=None, model_cls_2=None, on_clause_1=None):
+    def __init__(self, model_cls_0, join_type_0: str, model_cls_1, on_clause_0: str, join_type_1=None, model_cls_2=None, on_clause_1=None) -> None:
         """ Join query for (upto 3) tables"""
         self.conn, self.cur = get_conn_cur()
 

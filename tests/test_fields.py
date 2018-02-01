@@ -9,22 +9,7 @@ from postgrespy.models import Model
 import psycopg2.extras
 from psycopg2.extras import Json
 
-class Movie(Model):
-    name = TextField()
-    trivia = ArrayField()
-    casts = ArrayField()
-    earning = ArrayField()
-
-    class Meta:
-        table = 'movies'
-
-
-class Entry(Model):
-    body = TextField()
-    updated = DateTimeField()
-
-    class Meta:
-        table = 'entries'
+from .models import Movie, Entry, Student, Product
 
 
 class ArrayFieldTestCase(TestCase):
@@ -129,3 +114,44 @@ class DateTimeFieldTestCase(TestCase):
             updated.hour == now.hour and \
             updated.minute == now.minute and \
             updated.second == now.second
+
+class BooleanTestCase(TestCase):
+    def setUp(self):
+        self.transgender = Student.insert(name='HG', age=27, is_male=True)
+
+    def test_boolean_field(self):
+
+        assert self.transgender.is_male == True
+
+        self.transgender.update(is_male = False)
+
+        still_trangender = Student.fetchone(id=self.transgender.id)
+        assert still_trangender.is_male == False
+
+        still_trangender.delete()
+
+    def tearDown(self):
+        for student in Student.fetchall():
+            student.delete()
+
+
+class JsonBTestCase(TestCase):
+    def setUp(self):
+        self.tom = Student.insert(name='Tom')
+        self.meth = Product.insert(name='meth', owner_id=self.tom.id, detail={
+            'color': 'red',
+            'weight': 5
+        })
+
+    def test_jsonb_field(self):
+        assert(self.meth.detail['color'] == 'red')
+        new_detail = self.meth.detail
+        new_detail['price'] = 5
+        self.meth.update(detail=new_detail.value)
+
+        meth2 = Product.fetchone(id=self.meth.id)
+        assert(meth2.detail['price'] == 5)
+
+    def tearDown(self):
+        for student in Student.fetchall():
+            student.delete()

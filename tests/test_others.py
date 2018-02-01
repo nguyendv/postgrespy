@@ -1,33 +1,7 @@
-from postgrespy.models import Model
-from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField
 from postgrespy.queries import Select, Join
+from postgrespy.fields import IntegerField
 from unittest import TestCase
-
-
-class Student(Model):
-    name = TextField()
-    age = IntegerField()
-    is_male = BooleanField()
-
-    class Meta:
-        table = 'students'
-
-
-class Product(Model):
-    name = TextField()
-    owner_id = IntegerField()
-    detail = JsonBField()
-
-    class Meta:
-        table = 'products'
-
-
-class Car(Model):
-    name = TextField()
-    owner_id = IntegerField()
-
-    class Meta:
-        table = 'cars'
+from .models import Student, Product, Car
 
 
 class SaveLoadDeleteTestCase(TestCase):
@@ -56,48 +30,6 @@ class SaveLoadDeleteTestCase(TestCase):
             assert len(two_peters) == 2
 
         assert self.no_one is None
-
-    def tearDown(self):
-        for student in Student.fetchall():
-            student.delete()
-
-
-class BooleanTestCase(TestCase):
-    def setUp(self):
-        self.transgender = Student.insert(name='HG', age=27, is_male=True)
-
-    def test_boolean_field(self):
-
-        assert self.transgender.is_male == True
-
-        self.transgender.update(is_male = False)
-
-        still_trangender = Student.fetchone(id=self.transgender.id)
-        assert still_trangender.is_male == False
-
-        still_trangender.delete()
-
-    def tearDown(self):
-        for student in Student.fetchall():
-            student.delete()
-
-
-class JsonBTestCase(TestCase):
-    def setUp(self):
-        self.tom = Student.insert(name='Tom')
-        self.meth = Product.insert(name='meth', owner_id=self.tom.id, detail={
-            'color': 'red',
-            'weight': 5
-        })
-
-    def test_jsonb_field(self):
-        assert(self.meth.detail['color'] == 'red')
-        new_detail = self.meth.detail
-        new_detail['price'] = 5
-        self.meth.update(detail=new_detail.value)
-
-        meth2 = Product.fetchone(id=self.meth.id)
-        assert(meth2.detail['price'] == 5)
 
     def tearDown(self):
         for student in Student.fetchall():
