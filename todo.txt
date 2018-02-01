@@ -1,7 +1,0 @@
-Version 0.3.0
-- Implement model.update(field+=1)
-	- how to parse arguments with operators (+=, -=, =, !=) (45 min)
-	- implement (30 min)
-	- test (30 min)
-- New select api based on previous research on parsing arguments (60 min)
-- Make a_field.value is the unified way to get the value of a field.

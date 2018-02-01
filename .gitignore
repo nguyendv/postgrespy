@@ -5,3 +5,8 @@ __pycache__/
 .idea/*
 .mypy_cache/
 .vscode/
+todo.txt
+.env
+.nvim/
+dist/
+postgrespy.egg-info/
