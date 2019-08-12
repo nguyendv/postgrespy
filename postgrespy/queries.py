@@ -7,10 +7,16 @@ class Query:
     def __init__(self, model_cls):
         self.conn, self.cur = get_conn_cur()
         self.model_cls = model_cls
-        self.fields = [f for f in dir(model_cls) if not f.startswith(
-            '__') and issubclass(type(getattr(model_cls, f)), BaseField)]
-        self.fields = self.fields + ['id']  # Add id to the list of fields
-        self.stmt = ''
+        self.fields = [
+            f
+            for f in dir(model_cls)
+            if (
+                issubclass(type(getattr(model_cls, f)), BaseField)
+                and not f.startswith("__")
+            )
+        ]
+        self.fields = self.fields + ["id"]  # Add id to the list of fields
+        self.stmt = ""
 
     def __enter__(self):
         return self
@@ -25,7 +31,7 @@ class Query:
         example: .order_by("age DESC", "name"): order by age desc
             if two entries have the same age, name will be used for ordering
         https://www.postgresql.org/docs/current/static/queries-order.html"""
-        self.stmt += ' ORDER BY ' + ','.join(expressions)
+        self.stmt += " ORDER BY " + ",".join(expressions)
 
     def execute(self, values: Tuple = None):
         self.cur.execute(self.stmt, values)
@@ -64,55 +70,83 @@ class Query:
 
 
 class Select(Query):
-    def __init__(self, model_cls, where: str=None) -> None:
+    def __init__(self, model_cls, where: str = None) -> None:
         super().__init__(model_cls)
-        self.stmt = 'SELECT ' + ','.join(self.fields) + \
-            ' FROM ' + model_cls.Meta.table
+        self.stmt = "SELECT " + ",".join(self.fields) + " FROM " + model_cls.Meta.table
         if where is not None:
-            self.stmt = self.stmt + ' WHERE ' + where
+            self.stmt = self.stmt + " WHERE " + where
 
 
 class Join(Query):
-    def __init__(self, model_cls_0, join_type_0: str, model_cls_1, on_clause_0: str, join_type_1=None, model_cls_2=None, on_clause_1=None) -> None:
+    def __init__(
+        self,
+        model_cls_0,
+        join_type_0: str,
+        model_cls_1,
+        on_clause_0: str,
+        join_type_1=None,
+        model_cls_2=None,
+        on_clause_1=None,
+    ) -> None:
         """ Join query for (upto 3) tables"""
         self.conn, self.cur = get_conn_cur()
 
         self.model_cls_0 = model_cls_0
 
         table_name_0 = model_cls_0.Meta.table
-        self.fields_0 = [f for f in dir(model_cls_0) if not f.startswith(
-            '__') and issubclass(type(getattr(model_cls_0, f)), BaseField)]
+        self.fields_0 = [
+            f
+            for f in dir(model_cls_0)
+            if not f.startswith("__")
+            and issubclass(type(getattr(model_cls_0, f)), BaseField)
+        ]
         # Add id to the list of fields
-        self.fields_0 += ['id']
+        self.fields_0 += ["id"]
 
         self.model_cls_1 = model_cls_1
         table_name_1 = model_cls_1.Meta.table
-        self.fields_1 = [f for f in dir(model_cls_1) if not f.startswith(
-            '__') and issubclass(type(getattr(model_cls_1, f)), BaseField)]
+        self.fields_1 = [
+            f
+            for f in dir(model_cls_1)
+            if not f.startswith("__")
+            and issubclass(type(getattr(model_cls_1, f)), BaseField)
+        ]
         # Add id to the list of fields
-        self.fields_1 += ['id']
+        self.fields_1 += ["id"]
 
         if model_cls_2 is not None:
             self.model_cls_2 = model_cls_2
             table_name_2 = model_cls_2.Meta.table
-            self.fields_2 = [f for f in dir(model_cls_2) if not f.startswith('__')
-                             and issubclass(type(getattr(model_cls_2, f)), BaseField)]
-            self.fields_2 += ['id']
+            self.fields_2 = [
+                f
+                for f in dir(model_cls_2)
+                if not f.startswith("__")
+                and issubclass(type(getattr(model_cls_2, f)), BaseField)
+            ]
+            self.fields_2 += ["id"]
         else:
             self.model_cls_2 = None
             self.fields_2 = []
 
-        self.stmt = 'SELECT ' + \
-            ','.join([table_name_0 + '.' + f for f in self.fields_0] +
-                     [table_name_1 + '.' + f for f in self.fields_1] +
-                     [table_name_2 + '.' + f for f in self.fields_2]) + \
-            ' FROM ' + table_name_0 + \
-            ' ' + join_type_0 + ' ' + table_name_1
+        self.stmt = (
+            "SELECT "
+            + ",".join(
+                [table_name_0 + "." + f for f in self.fields_0]
+                + [table_name_1 + "." + f for f in self.fields_1]
+                + [table_name_2 + "." + f for f in self.fields_2]
+            )
+            + " FROM "
+            + table_name_0
+            + " "
+            + join_type_0
+            + " "
+            + table_name_1
+        )
         if on_clause_0 is not None:
-            self.stmt = self.stmt + ' ON ' + on_clause_0
+            self.stmt = self.stmt + " ON " + on_clause_0
         if model_cls_2 is not None:
-            self.stmt += ' ' + join_type_1 + ' ' + table_name_2
-            self.stmt += ' ON ' + on_clause_1
+            self.stmt += " " + join_type_1 + " " + table_name_2
+            self.stmt += " ON " + on_clause_1
 
     def fetchone(self):
         row = self.cur.fetchone()

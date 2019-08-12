@@ -4,4 +4,5 @@
 class UniqueViolatedError(Exception):
     """Exception rasied for unique constrain violated
     """
+
     pass

@@ -3,6 +3,7 @@ from datetime import datetime
 import psycopg2
 import psycopg2.extras
 
+
 class BaseField:
     def __init__(self):
         pass
@@ -27,7 +28,7 @@ class IntegerField(BaseField, int):
 
 
 class BooleanField(BaseField):
-    def __init__(self, value: bool= None) -> None:
+    def __init__(self, value: bool = None) -> None:
         super().__init__()
         self.value = value
 
@@ -71,7 +72,8 @@ class ArrayField(BaseField, list):
 
 
 class DateTimeField(BaseField):
-    """ Translate the datetime.datetime class into timestamp field without timezone in postgresql."""
+    """ Translate the datetime.datetime class into timestamp field without timezone
+    in postgresql."""
 
     def __init__(self, value: datetime = None) -> None:
         super().__init__()
@@ -80,6 +82,3 @@ class DateTimeField(BaseField):
 
 """Adapt Python dict as Postgres Json"""
 psycopg2.extensions.register_adapter(dict, psycopg2.extras.Json)
-
-
-

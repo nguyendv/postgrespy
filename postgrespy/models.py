@@ -8,8 +8,7 @@ import json
 import warnings
 
 
-
-class Model(object):
+class Model:
     """
     Base class for SqlModel
 
@@ -30,7 +29,7 @@ class Model(object):
         if name in dir(self):
             if value is not None:
                 field_cls = type(getattr(self, name))
-                if name == 'id':
+                if name == "id":
                     field_cls = IntegerField
                 super().__setattr__(name, field_cls(value))
         else:
@@ -43,7 +42,10 @@ class Model(object):
         any constraint or handle exception before/after calling me.
         and DON't add new attributes after an object is created.
         """
-        warnings.warn("DEPRECATED from September 2017. Use update(self, **kwargs) instead", DeprecationWarning)
+        warnings.warn(
+            "DEPRECATED from September 2017. Use update(self, **kwargs) instead",
+            DeprecationWarning,
+        )
         if self.id is None:
             self._insert()
         else:
@@ -54,32 +56,36 @@ class Model(object):
         """ Execute the INSERT query
         :param: kwargs: list of key=value, where
                 key is one field of the table,
-                value must be a Python builtin type, not my custom types defined in fields.py: int, string, datetime, dict, etc."""
+                value must be a Python builtin type, not my custom types defined in
+                fields.py: int, string, datetime, dict, etc."""
         conn, cur = get_conn_cur()
 
-        template = Template('INSERT INTO {{table}}\n'
-                            '( {{columns}} )\n'
-                            'VALUES ( {{placeholders}} )\n'
-                            'RETURNING id')
+        template = Template(
+            "INSERT INTO {{table}}\n"
+            "( {{columns}} )\n"
+            "VALUES ( {{placeholders}} )\n"
+            "RETURNING id"
+        )
 
         """Prepare placeholders"""
         temp_arr = []
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             # check if value is list of dict
             # if so, treat it as an array of json
             if type(v) is list and len(v) > 0 and type(v[0]) is dict:
                 # https://github.com/psycopg/psycopg2/issues/585
-                #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
-                temp_arr.append('%s::jsonb[]')
-            else: 
-                temp_arr.append('%s')
-        placeholders = ','.join(temp_arr)
-        
+                # https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
+                temp_arr.append("%s::jsonb[]")
+            else:
+                temp_arr.append("%s")
+        placeholders = ",".join(temp_arr)
+
         """Render and execute the statement"""
-        stmt = template.render(table=cls.Meta.table,
-                               columns=','.join(kwargs.keys()),
-                               placeholders=placeholders
-                               )
+        stmt = template.render(
+            table=cls.Meta.table,
+            columns=",".join(kwargs.keys()),
+            placeholders=placeholders,
+        )
         ret = None
 
         try:
@@ -90,15 +96,14 @@ class Model(object):
             ret = cls(id, **kwargs)
         except DatabaseError as e:
             conn.rollback()
-            if e.pgcode == '23505':
+            if e.pgcode == "23505":
                 """
                 23505: PostgreSQL error code: unique violation
                 https://www.postgresql.org/docs/9.6/static/errcodes-appendix.html
                 """
                 raise UniqueViolatedError()
             else:
-                raise NotImplementedError(
-                    'Unhandled error. Need to check.')
+                raise NotImplementedError("Unhandled error. Need to check.")
 
         close(conn, cur)
         return ret
@@ -107,48 +112,55 @@ class Model(object):
         """Execute the update query
         :param: kwargs: list of key=value, where
                 key is one field of the table,
-                value must be a Python builtin type, not my custom types defined in fields.py: int, string, datetime, dict, etc."""
+                value must be a Python builtin type, not my custom types defined in
+                fields.py: int, string, datetime, dict, etc."""
         conn, cur = get_conn_cur()
 
-        template = Template('UPDATE {{table}} '
-                            'SET {{ field_value_pairs }} '
-                            'WHERE id = %s')
+        template = Template(
+            "UPDATE {{table}} " "SET {{ field_value_pairs }} " "WHERE id = %s"
+        )
 
         """Prepare the field value pairs"""
         temp_arr = []
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             # check if value is list of dict
             # if so, treat it as an array of json
             if type(v) is list and len(v) > 0 and type(v[0]) is dict:
                 # https://github.com/psycopg/psycopg2/issues/585
-                #https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
-                temp_arr.append(k + ' = %s::jsonb[]')
-            else: 
-                temp_arr.append(k + ' = %s')
-        field_value_pairs = ','.join(temp_arr)
+                # https://stackoverflow.com/questions/31641894/convert-python-list-of-dicts-into-postgresql-array-of-json
+                temp_arr.append(k + " = %s::jsonb[]")
+            else:
+                temp_arr.append(k + " = %s")
+        field_value_pairs = ",".join(temp_arr)
 
         """Render and execute the statement"""
-        stmt = template.render(table=self.Meta.table, field_value_pairs=field_value_pairs)
+        stmt = template.render(
+            table=self.Meta.table, field_value_pairs=field_value_pairs
+        )
         cur.execute(stmt, list(kwargs.values()) + [self.id])
 
         conn.commit()
         close(conn, cur)
 
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
     # DEPRECATED, use update(cls, **kwargs) instead
     def _update(self):
         """Execute the UPDATE query"""
-        warnings.warn("_update(self) deprecated from 09/2017, use update(self, **kwargs) instead", DeprecationWarning)
+        warnings.warn(
+            "_update(self) deprecated from 09/2017, use update(self, **kwargs) instead",
+            DeprecationWarning,
+        )
         conn, cur = get_conn_cur()
 
-        template = Template('UPDATE {{table}}\n'
-                            'SET {{ field_value_pairs }} \n'
-                            'WHERE id = %s')
-        stmt = template.render(table=self.Meta.table,
-                               field_value_pairs=','.join(
-                                   f + '=%s' for f in self.fields))
+        template = Template(
+            "UPDATE {{table}}\n" "SET {{ field_value_pairs }} \n" "WHERE id = %s"
+        )
+        stmt = template.render(
+            table=self.Meta.table,
+            field_value_pairs=",".join(f + "=%s" for f in self.fields),
+        )
         values = []
         for f in self.fields:
             if getattr(self, f) is None:
@@ -163,9 +175,9 @@ class Model(object):
     @classmethod
     def fetchone(cls, **kwargs):
         """Syntactic sugar for Select().fetchone()"""
-        wheres = [k + '=%s' for k in kwargs.keys()]
+        wheres = [k + "=%s" for k in kwargs.keys()]
         if len(kwargs) > 0:
-            where = ' and '.join(wheres)
+            where = " and ".join(wheres)
             values = tuple(kwargs.values())
         else:
             where = None
@@ -180,9 +192,9 @@ class Model(object):
     @classmethod
     def fetchall(cls, **kwargs):
         """Syntactic sugar for Select().fetchall()"""
-        wheres = [k + '=%s' for k in kwargs.keys()]
+        wheres = [k + "=%s" for k in kwargs.keys()]
         if len(kwargs) > 0:
-            where = ' and '.join(wheres)
+            where = " and ".join(wheres)
             values = tuple(kwargs.values())
         else:
             where = None
@@ -194,9 +206,9 @@ class Model(object):
     @classmethod
     def fetchmany(cls, size, **kwargs):
         """Syntactic sugar for Select().fetchmany()"""
-        wheres = [k + '=%s' for k in kwargs.keys()]
+        wheres = [k + "=%s" for k in kwargs.keys()]
         if len(kwargs) > 0:
-            where = ' and '.join(wheres)
+            where = " and ".join(wheres)
             values = tuple(kwargs.values())
         else:
             where = None
@@ -210,29 +222,30 @@ class Model(object):
         Delete the row from database.
         """
         conn, cur = get_conn_cur()
-        template = Template('DELETE FROM {{table}}\n'
-                            'WHERE id = %s')
+        template = Template("DELETE FROM {{table}}\n" "WHERE id = %s")
         stmt = template.render(table=self.Meta.table)
         cur.execute(stmt, (self.id,))
         conn.commit()
         close(conn, cur)
-    
+
     # DEPRECATED, use ::insert() instead
     def _insert(self):
         """ Execute the INSERT query"""
         warnings.warn("DEPRECATED, use ::insert() instead", DeprecationWarning)
         conn, cur = get_conn_cur()
 
-        template = Template('INSERT INTO {{table}}\n'
-                            '( {{columns}} )\n'
-                            'VALUES ( {{placeholders}} )\n'
-                            'RETURNING id')
+        template = Template(
+            "INSERT INTO {{table}}\n"
+            "( {{columns}} )\n"
+            "VALUES ( {{placeholders}} )\n"
+            "RETURNING id"
+        )
 
-        stmt = template.render(table=self.Meta.table,
-                               columns=','.join(self.fields),
-                               placeholders=','.join('%s'
-                                                     for f in self.fields)
-                               )
+        stmt = template.render(
+            table=self.Meta.table,
+            columns=",".join(self.fields),
+            placeholders=",".join("%s" for f in self.fields),
+        )
         try:
             values = []
             for f in self.fields:
@@ -245,15 +258,12 @@ class Model(object):
             conn.commit()
         except DatabaseError as e:
             conn.rollback()
-            if e.pgcode == '23505':
+            if e.pgcode == "23505":
                 """
                 23505: PostgreSQL error code: unique violation
                 https://www.postgresql.org/docs/9.6/static/errcodes-appendix.html
                 """
                 raise UniqueViolatedError()
             else:
-                raise NotImplementedError(
-                    'Unhandled error. Need to check.')
+                raise NotImplementedError("Unhandled error. Need to check.")
         close(conn, cur)
-
-

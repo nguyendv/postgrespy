@@ -1,5 +1,13 @@
 from postgrespy.models import Model
-from postgrespy.fields import TextField, IntegerField, BooleanField, JsonBField, ArrayField, DateTimeField
+from postgrespy.fields import (
+    TextField,
+    IntegerField,
+    BooleanField,
+    JsonBField,
+    ArrayField,
+    DateTimeField,
+)
+
 
 class Student(Model):
     name = TextField()
@@ -7,7 +15,7 @@ class Student(Model):
     is_male = BooleanField()
 
     class Meta:
-        table = 'students'
+        table = "students"
 
 
 class Product(Model):
@@ -16,7 +24,7 @@ class Product(Model):
     detail = JsonBField()
 
     class Meta:
-        table = 'products'
+        table = "products"
 
 
 class Car(Model):
@@ -24,7 +32,8 @@ class Car(Model):
     owner_id = IntegerField()
 
     class Meta:
-        table = 'cars'
+        table = "cars"
+
 
 class Movie(Model):
     name = TextField()
@@ -33,7 +42,7 @@ class Movie(Model):
     earning = ArrayField()
 
     class Meta:
-        table = 'movies'
+        table = "movies"
 
 
 class Entry(Model):
@@ -41,5 +50,4 @@ class Entry(Model):
     updated = DateTimeField()
 
     class Meta:
-        table = 'entries'
-
+        table = "entries"
