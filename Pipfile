@@ -8,7 +8,7 @@ name = "pypi"
 [packages]
 
 "psycopg2" = "~=2.7.3"
-"jinja2" = "~=2.10"
+"jinja2" = "~=2.11"
 
 
 [dev-packages]
